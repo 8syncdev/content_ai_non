@@ -73,22 +73,21 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
     // AI Processing if enabled - Kiểm tra chi tiết hơn
     log(`🔍 Checking AI options: ${JSON.stringify(aiOptions)}`)
 
-    if (aiOptions) {
+    if (aiOptions && aiOptions.useAI) {
       log(`📋 AI Options found:`)
       log(`  - templateType: ${aiOptions.templateType}`)
-      log(`  - policy: ${aiOptions.policy}`)
-      log(`  - useStream: ${aiOptions.useStream}`)
+      log(`  - useAI: ${aiOptions.useAI}`)
+      log(`  - apiKey: ${aiOptions.apiKey ? '***provided***' : 'not provided'}`)
 
       // Kiểm tra điều kiện AI processing
-      const shouldProcessWithAI = aiOptions.templateType &&
-        aiOptions.templateType !== 'raw' &&
-        (aiOptions.templateType === 'exercise' || aiOptions.templateType === 'lesson')
+      const shouldProcessWithAI = aiOptions.useAI && aiOptions.templateType &&
+        (aiOptions.templateType === 'exercise' || aiOptions.templateType === 'lesson' || aiOptions.templateType === 'raw')
 
       log(`🤖 Should process with AI: ${shouldProcessWithAI}`)
 
       if (shouldProcessWithAI) {
         log(`🤖 AI Processing ENABLED`)
-        log(`🎯 Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+        log(`🎯 Template: ${aiOptions.templateType}`)
 
         try {
           log(`🔄 Starting AI processing...`)
@@ -119,17 +118,45 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
             log(`📝 Final description length: ${finalContent.description.length}`)
           } else {
             log(`⚠️ AI processing failed: ${aiResult.error}`)
-            log(`📄 Using original content as fallback`)
+            log(`📄 Using enhanced template as fallback`)
+
+            // Use enhanced template fallback
+            const fallbackResult = await aiActions.processContent(content, { ...aiOptions, useAI: false })
+            if (fallbackResult.success && fallbackResult.data) {
+              finalContent = {
+                ...content,
+                description: fallbackResult.data,
+                aiEnhanced: false,
+                templateEnhanced: true,
+                aiTemplate: aiOptions.templateType
+              }
+            }
           }
         } catch (aiError) {
           log(`❌ AI processing error: ${aiError.message}`)
-          log(`📄 Using original content as fallback`)
+          log(`📄 Using enhanced template as fallback`)
+
+          // Use enhanced template fallback
+          try {
+            const fallbackResult = await aiActions.processContent(content, { ...aiOptions, useAI: false })
+            if (fallbackResult.success && fallbackResult.data) {
+              finalContent = {
+                ...content,
+                description: fallbackResult.data,
+                aiEnhanced: false,
+                templateEnhanced: true,
+                aiTemplate: aiOptions.templateType
+              }
+            }
+          } catch (fallbackError) {
+            log(`❌ Template fallback also failed: ${fallbackError.message}`)
+          }
         }
       } else {
-        log(`📝 AI Processing DISABLED - Invalid template type or raw selected`)
+        log(`📝 AI Processing DISABLED - useAI is false or invalid template type`)
       }
     } else {
-      log(`📝 AI Processing DISABLED - No AI options provided`)
+      log(`📝 AI Processing DISABLED - No AI options provided or useAI is false`)
     }
 
     log(`💾 Exporting final content...`)

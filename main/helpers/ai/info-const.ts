@@ -9,8 +9,8 @@ export interface AIConfig {
 
 export const DEFAULT_AI_CONFIG: AIConfig = {
     provider: 'mistral',
-    apiKey: '', // User must provide their own key
-    model: 'pixtral-12b-2409',
+    apiKey: 'AhjH8mbZ51JANWzJRbkbBsESb4rQQKmu', // User must provide their own key
+    model: 'devstral-small-2505',
     temperature: 0.7,
     maxTokens: 4000
 }
