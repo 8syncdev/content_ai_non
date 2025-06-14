@@ -24,9 +24,13 @@ import {
   BookOpen,
   Package,
   Clock,
-  CheckSquare
+  CheckSquare,
+  Bot,
+  Sparkles,
+  Brain,
+  Wand2
 } from 'lucide-react'
-import { Topic, ProblemContent } from '../types/electron'
+import { Topic, ProblemContent, AIProcessingOptions } from '../types/electron'
 
 function ScraperPage() {
   const { state, dispatch } = useApp()
@@ -49,6 +53,15 @@ function ScraperPage() {
     exportedFiles: 0
   })
 
+  // AI Processing Options
+  const [useAI, setUseAI] = useState(false)
+  const [aiOptions, setAiOptions] = useState<AIProcessingOptions>({
+    templateType: 'exercise',
+    useStream: false,
+    policy: 'balanced'
+  })
+  const [aiApiKey, setAiApiKey] = useState('')
+
   // Ref để control scraping từ bên ngoài
   const scrapingControlRef = useRef({ shouldStop: false })
 
@@ -68,11 +81,18 @@ function ScraperPage() {
       bgGradient: 'from-green-50 to-emerald-50'
     },
     {
+      id: 'ai',
+      name: 'AI Processing',
+      icon: Bot,
+      gradient: 'from-purple-500 to-pink-600',
+      bgGradient: 'from-purple-50 to-pink-50'
+    },
+    {
       id: 'export',
       name: 'Xuất dữ liệu',
       icon: Archive,
-      gradient: 'from-purple-500 to-purple-600',
-      bgGradient: 'from-purple-50 to-violet-50'
+      gradient: 'from-orange-500 to-orange-600',
+      bgGradient: 'from-orange-50 to-yellow-50'
     },
     {
       id: 'settings',
@@ -83,6 +103,52 @@ function ScraperPage() {
     }
   ]
 
+  // Template configurations
+  const templateConfigs = {
+    exercise: {
+      name: 'Bài tập lập trình',
+      description: 'Chuyển đổi nội dung crawl thành bài tập có cấu trúc tiếng Việt',
+      icon: '📝',
+      features: [
+        'Dịch sang tiếng Việt tự nhiên',
+        'Cấu trúc markdown chuẩn',
+        'Giải thích code chi tiết',
+        'Giữ nguyên test cases gốc',
+        'Thêm ví dụ minh họa'
+      ]
+    },
+    lesson: {
+      name: 'Bài học',
+      description: 'Chuyển đổi thành bài học có cấu trúc rõ ràng cho người mới học',
+      icon: '📚',
+      features: [
+        'Ngôn ngữ dễ hiểu cho người mới',
+        'Bố cục bài học logic',
+        'Ví dụ thực tế phong phú',
+        'Câu hỏi ôn tập',
+        'Tài liệu tham khảo'
+      ]
+    }
+  }
+
+  const policyConfigs = {
+    fast: {
+      name: 'Xử lý nhanh',
+      description: 'Xử lý nhanh, phù hợp cho content đơn giản',
+      icon: '⚡'
+    },
+    balanced: {
+      name: 'Cân bằng',
+      description: 'Cân bằng giữa chất lượng và tốc độ',
+      icon: '⚖️'
+    },
+    quality: {
+      name: 'Chất lượng cao',
+      description: 'Xử lý chất lượng cao, phù hợp cho content phức tạp',
+      icon: '💎'
+    }
+  }
+
   useEffect(() => {
     initializeScraper()
     return () => {
@@ -91,6 +157,21 @@ function ScraperPage() {
       }
     }
   }, [])
+
+  // Update AI config when API key changes
+  useEffect(() => {
+    if (aiApiKey && window.electron?.ai) {
+      window.electron.ai.updateConfig({ apiKey: aiApiKey })
+        .then(result => {
+          if (result.success) {
+            addLog(`🔧 Đã cập nhật AI API key`)
+          }
+        })
+        .catch(error => {
+          addLog(`❌ Lỗi cập nhật AI config: ${error.message}`)
+        })
+    }
+  }, [aiApiKey])
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString()
@@ -164,6 +245,14 @@ function ScraperPage() {
     addLog(`🚀 Bắt đầu scraping ${totalProblems} bài tập từ ${selectedTopicData.length} chủ đề`)
     addLog(`📋 Các chủ đề được chọn: ${selectedTopicData.map(t => t.name).join(', ')}`)
 
+    // Log AI settings
+    if (useAI) {
+      addLog(`🤖 AI Processing: ${templateConfigs[aiOptions.templateType]?.name || aiOptions.templateType}`)
+      addLog(`⚙️ Policy: ${policyConfigs[aiOptions.policy]?.name || aiOptions.policy}`)
+    } else {
+      addLog(`📝 Sử dụng nội dung gốc (không AI)`)
+    }
+
     dispatch({
       type: 'SET_PROGRESS',
       payload: {
@@ -202,15 +291,28 @@ function ScraperPage() {
         try {
           const result = await window.electron.scraper.getProblemContent(problem.url)
           if (result.success && result.data) {
+            // Prepare AI options if enabled
+            const finalAiOptions = useAI ? aiOptions : undefined
+
+            // Debug logs for AI processing
+            if (useAI) {
+              addLog(`🤖 AI enabled - Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+              addLog(`🔧 AI Options: ${JSON.stringify(finalAiOptions)}`)
+            } else {
+              addLog(`📝 Using original content (AI disabled)`)
+            }
+
             const exportResult = await window.electron.scraper.exportContent(
               result.data,
               topic.name,
               topicIndex,
-              problemIndex
+              problemIndex,
+              finalAiOptions
             )
             if (exportResult.success) {
               exported++
-              addLog(`✅ [${exported}] Đã xuất: ${problem.title}`)
+              const aiStatus = useAI ? ' (AI enhanced)' : ''
+              addLog(`✅ [${exported}] Đã xuất: ${problem.title}${aiStatus}`)
             } else {
               errors++
               addLog(`❌ Lỗi xuất: ${problem.title} - ${exportResult.error}`)
@@ -242,8 +344,9 @@ function ScraperPage() {
           }
         })
 
-        // Delay để tránh spam server
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        // Delay để tránh spam server (thêm thời gian nếu dùng AI)
+        const delay = useAI ? 2500 : 1500
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
 
@@ -254,6 +357,9 @@ function ScraperPage() {
     addLog(`📊 Tổng kết: ${completed}/${totalProblems} bài đã xử lý`)
     addLog(`✅ Thành công: ${exported} bài`)
     addLog(`❌ Lỗi: ${errors} bài`)
+    if (useAI) {
+      addLog(`🤖 AI đã xử lý ${exported} bài thành công`)
+    }
 
     dispatch({
       type: 'SET_PROGRESS',
@@ -355,7 +461,7 @@ function ScraperPage() {
   }
 
   const renderQuickStart = () => (
-    <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 text-white mb-6 shadow-xl">
+    <div className="bg-gradient-blue rounded-2xl p-6 text-white mb-6 shadow-xl">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center mb-3">
@@ -363,7 +469,7 @@ function ScraperPage() {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold mb-1">Bắt đầu nhanh</h2>
+              <h2 className="text-xl font-bold mb-1 text-white">Bắt đầu nhanh</h2>
               <p className="text-blue-100 text-base">
                 Thu thập tất cả bài tập Python từ Sanfoundry chỉ với một cú click
               </p>
@@ -390,6 +496,19 @@ function ScraperPage() {
           </button>
         </div>
       </div>
+
+      {/* AI Status Indicator */}
+      {useAI && (
+        <div className="mt-4 pt-4 border-t border-white/20">
+          <div className="flex items-center text-blue-100">
+            <Bot className="w-4 h-4 mr-2" />
+            <span className="text-sm font-medium">
+              🤖 AI Enhancement: {templateConfigs[aiOptions.templateType]?.name}
+              ({policyConfigs[aiOptions.policy]?.name})
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 
@@ -456,8 +575,8 @@ function ScraperPage() {
   const renderScraperTab = () => (
     <div className="space-y-6">
       {/* URL Input */}
-      <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border border-blue-100 shadow-lg">
-        <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+      <div className="card-gradient">
+        <h3 className="text-xl font-bold mb-4 flex items-center text-primary">
           <div className="p-2 bg-blue-100 rounded-xl mr-3">
             <Globe className="w-5 h-5 text-blue-600" />
           </div>
@@ -469,12 +588,12 @@ function ScraperPage() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="URL trang chủ Sanfoundry"
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400 text-base shadow-sm"
+            className="input-primary flex-1"
           />
           <button
             onClick={loadTopics}
             disabled={isLoading || !isInitialized}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="btn-primary flex items-center space-x-2"
           >
             {isLoading ? <Loader className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
             <span>Tải chủ đề</span>
@@ -483,8 +602,8 @@ function ScraperPage() {
       </div>
 
       {/* Controls */}
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg">
-        <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+      <div className="card-gradient">
+        <h3 className="text-xl font-bold mb-4 flex items-center text-primary">
           <div className="p-2 bg-gray-100 rounded-xl mr-3">
             <Settings className="w-5 h-5 text-gray-600" />
           </div>
@@ -494,7 +613,7 @@ function ScraperPage() {
           <button
             onClick={startScraping}
             disabled={!isInitialized || isScrapingActive || selectedTopics.length === 0}
-            className="px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="btn-success flex items-center justify-center space-x-2"
           >
             <Play className="w-4 h-4" />
             <span>Bắt đầu</span>
@@ -502,7 +621,7 @@ function ScraperPage() {
           <button
             onClick={stopScraping}
             disabled={!isScrapingActive}
-            className="px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="btn-danger flex items-center justify-center space-x-2"
           >
             <Square className="w-4 h-4" />
             <span>Dừng</span>
@@ -510,7 +629,7 @@ function ScraperPage() {
           <button
             onClick={testScrapeOne}
             disabled={!isInitialized || isScrapingActive || topics.length === 0}
-            className="px-4 py-3 bg-gradient-to-r from-yellow-600 to-yellow-700 text-white rounded-xl hover:from-yellow-700 hover:to-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="btn-warning flex items-center justify-center space-x-2"
           >
             <AlertCircle className="w-4 h-4" />
             <span>Test 1 bài</span>
@@ -518,7 +637,7 @@ function ScraperPage() {
           <button
             onClick={initializeScraper}
             disabled={isLoading}
-            className="px-4 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="btn-secondary flex items-center justify-center space-x-2"
           >
             <RefreshCw className="w-4 h-4" />
             <span>Khởi tạo lại</span>
@@ -674,10 +793,190 @@ function ScraperPage() {
     </div>
   )
 
+  const renderAITab = () => (
+    <div className="space-y-8">
+      {/* AI Toggle */}
+      <div className="card-gradient">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold flex items-center text-primary">
+            <div className="p-3 bg-purple-100 rounded-2xl mr-4">
+              <Bot className="w-6 h-6 text-purple-600" />
+            </div>
+            AI Processing
+          </h3>
+          <div className="flex items-center space-x-3">
+            <span className="text-primary font-medium">Sử dụng AI</span>
+            <button
+              onClick={() => setUseAI(!useAI)}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${useAI ? 'ai-toggle-on' : 'ai-toggle-off'}`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${useAI ? 'translate-x-7' : 'translate-x-1'}`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {!useAI && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+            <div className="flex items-center">
+              <FileText className="w-6 h-6 text-blue-600 mr-3" />
+              <div>
+                <h4 className="font-semibold text-blue-900">Nội dung gốc</h4>
+                <p className="text-blue-700">Sử dụng nội dung crawl gốc từ website, không qua xử lý AI</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {useAI && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+              <div className="flex items-center mb-4">
+                <Sparkles className="w-6 h-6 text-purple-600 mr-3" />
+                <div>
+                  <h4 className="font-semibold text-purple-900">AI Enhancement</h4>
+                  <p className="text-purple-700">Chuyển đổi nội dung crawl thành tiếng Việt với cấu trúc chuẩn</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-white/70 rounded-xl p-4 border border-purple-100">
+                  <h5 className="font-medium text-purple-800 mb-2">✨ Tính năng chính</h5>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li>• Dịch sang tiếng Việt tự nhiên</li>
+                    <li>• Cấu trúc markdown chuẩn</li>
+                    <li>• Giữ nguyên 100% test cases</li>
+                  </ul>
+                </div>
+                <div className="bg-white/70 rounded-xl p-4 border border-purple-100">
+                  <h5 className="font-medium text-purple-800 mb-2">🎯 Phù hợp cho</h5>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li>• Người mới học lập trình</li>
+                    <li>• Tài liệu giảng dạy</li>
+                    <li>• Nội dung tiếng Việt chất lượng</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Template Selection */}
+            <div>
+              <h4 className="text-lg font-bold text-primary mb-4">Chọn Template</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(templateConfigs).map(([key, config]) => (
+                  <div
+                    key={key}
+                    onClick={() => setAiOptions(prev => ({ ...prev, templateType: key as any }))}
+                    className={`cursor-pointer border-2 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 ${aiOptions.templateType === key ? 'ai-template-selected' : 'ai-template-unselected'}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">{config.icon}</span>
+                        <div>
+                          <h5 className="font-bold text-primary">{config.name}</h5>
+                          <p className="text-secondary text-sm">{config.description}</p>
+                        </div>
+                      </div>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${aiOptions.templateType === key
+                        ? 'border-purple-500 bg-purple-500'
+                        : 'border-gray-300'
+                        }`}>
+                        {aiOptions.templateType === key && (
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {config.features.map((feature, index) => (
+                        <div key={index} className="flex items-center text-sm text-secondary">
+                          <CheckCircle className="w-3 h-3 text-green-500 mr-2" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Policy Selection */}
+            <div>
+              <h4 className="text-lg font-bold text-primary mb-4">Chính sách xử lý</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {Object.entries(policyConfigs).map(([key, config]) => (
+                  <div
+                    key={key}
+                    onClick={() => setAiOptions(prev => ({ ...prev, policy: key as any }))}
+                    className={`cursor-pointer border-2 rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${aiOptions.policy === key
+                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg scale-105'
+                      : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-lg'
+                      }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">{config.icon}</div>
+                      <h5 className="font-bold text-primary mb-1">{config.name}</h5>
+                      <p className="text-secondary text-sm">{config.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* API Key */}
+            <div>
+              <h4 className="text-lg font-bold text-primary mb-4">API Configuration</h4>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+                <div className="flex items-center mb-4">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+                  <span className="font-medium text-yellow-800">API Key (Tùy chọn)</span>
+                </div>
+                <input
+                  type="password"
+                  value={aiApiKey}
+                  onChange={(e) => setAiApiKey(e.target.value)}
+                  placeholder="Nhập Mistral API key của bạn (để trống sẽ dùng key mặc định)"
+                  className="input-primary"
+                />
+                <p className="text-yellow-700 text-sm mt-2">
+                  💡 Để trống sẽ sử dụng key demo. Để có kết quả tốt nhất, hãy sử dụng API key riêng của bạn.
+                </p>
+              </div>
+            </div>
+
+            {/* Stream Option */}
+            <div>
+              <h4 className="text-lg font-bold text-primary mb-4">Tùy chọn nâng cao</h4>
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Activity className="w-5 h-5 text-secondary mr-3" />
+                    <div>
+                      <h5 className="font-medium text-primary">Stream Processing</h5>
+                      <p className="text-secondary text-sm">Xử lý theo thời gian thực (chậm hơn nhưng có thể theo dõi)</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setAiOptions(prev => ({ ...prev, useStream: !prev.useStream }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${aiOptions.useStream ? 'bg-blue-600' : 'bg-gray-300'}`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${aiOptions.useStream ? 'translate-x-6' : 'translate-x-1'}`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
   const renderExportTab = () => (
     <div className="space-y-8">
-      <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl p-8 border border-purple-100 shadow-lg">
-        <h3 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
+      <div className="card-gradient">
+        <h3 className="text-2xl font-bold mb-6 flex items-center text-primary">
           <div className="p-3 bg-purple-100 rounded-2xl mr-4">
             <Archive className="w-6 h-6 text-purple-600" />
           </div>
@@ -685,21 +984,21 @@ function ScraperPage() {
         </h3>
         <div className="space-y-6">
           <div>
-            <label className="block text-lg font-bold text-gray-700 mb-3">
+            <label className="block text-lg font-bold text-primary mb-3">
               Thư mục xuất
             </label>
             <input
               type="text"
               value={exportPath}
               onChange={(e) => setExportPath(e.target.value)}
-              className="w-full px-6 py-4 border border-gray-200 rounded-2xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700 text-lg shadow-sm"
+              className="input-primary"
             />
-            <div className="text-sm text-gray-500 mt-3 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+            <div className="text-sm text-muted mt-3 bg-gray-50 p-4 rounded-2xl border border-gray-200">
               <p className="flex items-center">
                 <Folder className="w-4 h-4 mr-2" />
                 💡 File sẽ được lưu vào thư mục con theo tên chủ đề
               </p>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-secondary">
                 Ví dụ: <code className="bg-gray-200 px-2 py-1 rounded">./temp/export/Simple Python Programs/bai-tap-1.md</code>
               </p>
             </div>
@@ -765,8 +1064,8 @@ function ScraperPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-3 px-4 font-semibold text-base flex items-center justify-center space-x-2 rounded-xl transition-all duration-300 transform ${activeTab === tab.id
-                  ? `bg-gradient-to-r ${tab.gradient} text-white shadow-xl scale-105`
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:scale-102'
+                  ? `bg-gradient-to-r ${tab.gradient} tab-active`
+                  : 'tab-inactive'
                   }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -782,14 +1081,15 @@ function ScraperPage() {
         <div className="lg:col-span-2">
           {activeTab === 'scraper' && renderScraperTab()}
           {activeTab === 'topics' && renderTopicsTab()}
+          {activeTab === 'ai' && renderAITab()}
           {activeTab === 'export' && renderExportTab()}
           {activeTab === 'settings' && renderSettingsTab()}
         </div>
 
         {/* Logs Panel */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg">
+        <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800 flex items-center">
+            <h3 className="text-xl font-bold text-primary flex items-center">
               <div className="p-2 bg-yellow-100 rounded-xl mr-3">
                 <FileText className="w-5 h-5 text-yellow-600" />
               </div>
@@ -797,12 +1097,12 @@ function ScraperPage() {
             </h3>
             <button
               onClick={clearLogs}
-              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-xl hover:bg-gray-100 transition-colors font-medium"
+              className="btn-secondary text-sm px-3 py-1"
             >
               Xóa
             </button>
           </div>
-          <div className="h-80 overflow-y-auto bg-gray-900 rounded-xl p-4 text-sm font-mono shadow-inner">
+          <div className="h-80 overflow-y-auto log-panel">
             {logs.length === 0 ? (
               <div className="text-center py-6">
                 <div className="p-3 bg-gray-800 rounded-xl w-12 h-12 mx-auto mb-3 flex items-center justify-center">
@@ -813,7 +1113,7 @@ function ScraperPage() {
               </div>
             ) : (
               logs.map((log, index) => (
-                <div key={index} className="mb-1 text-gray-100 leading-relaxed">
+                <div key={index} className="log-entry">
                   {log}
                 </div>
               ))

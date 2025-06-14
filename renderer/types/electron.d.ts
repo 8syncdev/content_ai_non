@@ -27,6 +27,30 @@ export interface ProblemMethod {
     complexity: string
 }
 
+export interface AIProcessingOptions {
+    templateType: 'exercise' | 'lesson' | 'raw'
+    useStream: boolean
+    policy: 'fast' | 'balanced' | 'quality'
+    customPrompt?: string
+}
+
+export interface AIResponse {
+    success: boolean
+    data?: string
+    error?: string
+    rawResponse?: string
+    processingTime?: number
+    metadata?: any
+}
+
+export interface AIConfig {
+    provider: 'mistral' | 'openai' | 'claude'
+    apiKey: string
+    model: string
+    temperature: number
+    maxTokens: number
+}
+
 declare global {
     interface Window {
         electron: {
@@ -34,8 +58,13 @@ declare global {
                 initialize: () => Promise<{ success: boolean; error?: string }>
                 getTopics: (url: string) => Promise<{ success: boolean; data?: Topic[]; error?: string }>
                 getProblemContent: (url: string) => Promise<{ success: boolean; data?: ProblemContent; error?: string }>
-                exportContent: (content: ProblemContent, topicName: string, topicIndex?: number, problemIndex?: number) => Promise<{ success: boolean; error?: string }>
+                exportContent: (content: ProblemContent, topicName: string, topicIndex?: number, problemIndex?: number, aiOptions?: AIProcessingOptions) => Promise<{ success: boolean; error?: string }>
                 close: () => Promise<{ success: boolean; error?: string }>
+            }
+            ai: {
+                processContent: (content: ProblemContent, options: AIProcessingOptions) => Promise<AIResponse>
+                processContentStream: (content: ProblemContent, options: AIProcessingOptions) => Promise<{ success: boolean; stream?: any; error?: string }>
+                updateConfig: (config: Partial<AIConfig>) => Promise<{ success: boolean; error?: string }>
             }
             versions: {
                 node: () => string

@@ -24,9 +24,16 @@ contextBridge.exposeInMainWorld('electron', {
     initialize: () => ipcRenderer.invoke('scraper:initialize'),
     getTopics: (url: string) => ipcRenderer.invoke('scraper:getTopics', url),
     getProblemContent: (url: string) => ipcRenderer.invoke('scraper:getProblemContent', url),
-    exportContent: (content: any, topicName: string, topicIndex?: number, problemIndex?: number) =>
-      ipcRenderer.invoke('scraper:exportContent', content, topicName, topicIndex, problemIndex),
+    exportContent: (content: any, topicName: string, topicIndex?: number, problemIndex?: number, aiOptions?: any) =>
+      ipcRenderer.invoke('scraper:exportContent', content, topicName, topicIndex, problemIndex, aiOptions),
     close: () => ipcRenderer.invoke('scraper:close'),
+  },
+
+  // AI APIs
+  ai: {
+    processContent: (content: any, options: any) => ipcRenderer.invoke('ai:processContent', content, options),
+    processContentStream: (content: any, options: any) => ipcRenderer.invoke('ai:processContentStream', content, options),
+    updateConfig: (config: any) => ipcRenderer.invoke('ai:updateConfig', config),
   },
 
   // System APIs

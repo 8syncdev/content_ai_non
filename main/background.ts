@@ -4,6 +4,7 @@ import serve from 'electron-serve'
 import { createWindow } from './helpers'
 import { ContentScraper } from './helpers/scraper'
 import { ensureDirectories, log } from './settings'
+import { aiActions } from './helpers/ai/actions/chat-ai.actions'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -60,17 +61,100 @@ ipcMain.handle('scraper:getProblemContent', async (_, url: string) => {
   }
 })
 
-ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: string, topicIndex?: number, problemIndex?: number) => {
+ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: string, topicIndex?: number, problemIndex?: number, aiOptions?: any) => {
   try {
     if (!scraper) throw new Error('Scraper not initialized')
     const topicNum = topicIndex !== undefined ? topicIndex + 1 : '?'
     const problemNum = problemIndex !== undefined ? problemIndex + 1 : '?'
     log(`💾 Exporting content: ${content.title} to topic: ${topicName} (Topic #${topicNum}, Problem #${problemNum})`)
-    await scraper.exportToFile(content, topicName, topicIndex, problemIndex)
+
+    let finalContent = content
+
+    // AI Processing if enabled
+    if (aiOptions && aiOptions.templateType && aiOptions.templateType !== 'raw') {
+      log(`🤖 AI Processing ENABLED`)
+      log(`📋 AI Options received: ${JSON.stringify(aiOptions)}`)
+      log(`🎯 Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+
+      try {
+        log(`🔄 Starting AI processing...`)
+        const aiResult = await aiActions.processContent(content, aiOptions)
+        log(`📊 AI Result: success=${aiResult.success}, processingTime=${aiResult.processingTime}ms`)
+
+        if (aiResult.success && aiResult.data) {
+          log(`✅ AI processing successful`)
+          log(`📏 AI output length: ${aiResult.data.length} characters`)
+          log(`🏷️ AI metadata: ${JSON.stringify(aiResult.metadata)}`)
+
+          // Use AI-processed markdown as description
+          finalContent = {
+            ...content,
+            title: aiResult.metadata?.title || content.title,
+            description: aiResult.data, // AI-generated markdown
+            aiEnhanced: true,
+            aiTemplate: aiOptions.templateType,
+            aiProcessingTime: aiResult.processingTime,
+            originalDescription: content.description
+          }
+
+          log(`🎨 Final content prepared with AI enhancement`)
+        } else {
+          log(`⚠️ AI processing failed: ${aiResult.error}`)
+          log(`📄 Using original content as fallback`)
+        }
+      } catch (aiError) {
+        log(`❌ AI processing error: ${aiError.message}`)
+        log(`📄 Using original content as fallback`)
+      }
+    } else {
+      log(`📝 AI Processing DISABLED or invalid options`)
+      if (aiOptions) {
+        log(`🔍 AI Options: ${JSON.stringify(aiOptions)}`)
+      }
+    }
+
+    log(`💾 Exporting final content...`)
+    await scraper.exportToFile(finalContent, topicName, topicIndex, problemIndex)
     log(`✅ Content exported successfully`)
     return { success: true }
   } catch (error) {
     log(`❌ Failed to export content: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+})
+
+// AI-specific handlers
+ipcMain.handle('ai:processContent', async (_, content: any, options: any) => {
+  try {
+    log(`🤖 Processing content with AI: ${content.title}`)
+    const result = await aiActions.processContent(content, options)
+    log(`✅ AI processing completed in ${result.processingTime}ms`)
+    return result
+  } catch (error) {
+    log(`❌ AI processing failed: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('ai:processContentStream', async (_, content: any, options: any) => {
+  try {
+    log(`🤖 Processing content with AI stream: ${content.title}`)
+    const result = await aiActions.processContentStream(content, options)
+    log(`✅ AI stream processing initiated`)
+    return result
+  } catch (error) {
+    log(`❌ AI stream processing failed: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('ai:updateConfig', async (_, config: any) => {
+  try {
+    aiActions.updateConfig(config)
+    log(`🔧 AI config updated`)
+    return { success: true }
+  } catch (error) {
+    log(`❌ Failed to update AI config: ${error.message}`)
     return { success: false, error: error.message }
   }
 })
