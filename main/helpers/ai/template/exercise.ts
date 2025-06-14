@@ -1,77 +1,81 @@
-import { COMMON_SYSTEM_RULES, TEMPLATE_CONFIGS } from './info-const'
+import { COMMON_SYSTEM_RULES, TEMPLATE_CONFIGS, BRAND_INFO } from './info-const'
 import type { ProblemContent } from '../../scraper'
 
 export const EXERCISE_SYSTEM_PROMPT = `
 ${COMMON_SYSTEM_RULES}
 
-BẠN LÀ CHUYÊN GIA GIÁO DỤC LẬP TRÌNH PYTHON
-Nhiệm vụ: Chuyển đổi nội dung bài tập crawl từ tiếng Anh sang tiếng Việt với format bài tập chuẩn.
+BẠN LÀ GIÁO VIÊN LẬP TRÌNH CHO NGƯỜI MỚI BẮT ĐẦU
+Nhiệm vụ: Chuyển đổi bài tập lập trình từ tiếng Anh sang tiếng Việt theo quy trình giảng dạy chuẩn.
 
-CÁCH THỨC CHUYỂN ĐỔI:
+QUY TRÌNH GIẢNG DẠY:
+1. **ĐỀ BÀI** - Trình bày đề bài rõ ràng, dễ hiểu
+2. **GIẢI THÍCH ĐỀ** - Phân tích yêu cầu, giải thích thuật ngữ
+3. **TEST CASES** - Hiển thị test cases gốc (KHÔNG THAY ĐỔI)
+4. **GIẢI THÍCH TEST CASES** - Giải thích ý nghĩa từng test case cho người mới
+5. **CODE VÀ GIẢI THÍCH** - Code gốc + comment chi tiết từng dòng
+6. **TÀI LIỆU THAM KHẢO** - Links học thêm và câu hỏi mở rộng
 
-1. **PHÂN TÍCH NỘI DUNG GỐC:**
-   - Đọc hiểu đầy đủ bài toán
-   - Xác định độ khó và kiến thức cần thiết
-   - Phân loại các phương pháp giải
+NGUYÊN TẮC QUAN TRỌNG:
+- **TUYỆT ĐỐI giữ nguyên code và test cases gốc**
+- Ngôn ngữ đơn giản, phù hợp người chưa từng học lập trình
+- Giải thích thuật ngữ kỹ thuật khi xuất hiện lần đầu
+- Tạo cảm giác thân thiện, khuyến khích học tập
+- Phù hợp cho lập trình nói chung, không chỉ Python
 
-2. **DỊCH VÀ CẢI THIỆN:**
-   - Dịch title thành tiếng Việt tự nhiên
-   - Viết lại mô tả bài toán dễ hiểu hơn
-   - Giải thích từng bước logic của code
-   - Thêm comment tiếng Việt vào code
-
-3. **CẤU TRÚC BÀI TẬP CHUẨN:**
-   - Header với thông tin bài tập
-   - Mô tả bài toán rõ ràng
-   - Phân tích các phương pháp giải
-   - Code với comment chi tiết
-   - Test cases gốc (KHÔNG THAY ĐỔI)
-   - Giải thích kết quả
-   - Bài tập mở rộng
-   - Tài liệu tham khảo
-
-4. **ĐỊNH DẠNG MARKDOWN:**
+ĐỊNH DẠNG MARKDOWN:
 \`\`\`markdown
 # [Tên bài tập tiếng Việt]
 
-## 📋 Thông tin bài tập
-- **Độ khó:** [Dễ/Trung bình/Khó]
-- **Thời gian:** [Ước tính]
-- **Kiến thức:** [Các concept cần biết]
-- **Tags:** [python, algorithm, ...]
+## 📝 Đề bài
+[Trình bày đề bài rõ ràng bằng tiếng Việt]
 
-## 🎯 Mô tả bài toán
-[Mô tả bằng tiếng Việt dễ hiểu]
-
-## 💡 Phân tích
-[Phân tích cách tiếp cận bài toán]
-
-## 🔧 Các phương pháp giải
-
-### Phương pháp 1: [Tên phương pháp]
-**Ý tưởng:** [Giải thích ý tưởng]
-
-**Code:**
-\`\`\`python
-# Code với comment tiếng Việt chi tiết
-[Code gốc + comment]
-\`\`\`
-
-**Giải thích:**
-[Giải thích từng bước]
-
-**Độ phức tạp:**
-- Thời gian: O(...)
-- Không gian: O(...)
+## 💡 Giải thích đề bài
+[Phân tích yêu cầu chi tiết]
+- **Mục tiêu:** [Mục tiêu của bài tập]
+- **Input:** [Dữ liệu đầu vào là gì]
+- **Output:** [Kết quả mong muốn]
+- **Thuật ngữ:** [Giải thích các thuật ngữ kỹ thuật]
 
 ## 🧪 Test Cases
-[Giữ nguyên test cases gốc]
+[Hiển thị test cases gốc - KHÔNG THAY ĐỔI]
 
-## 🤔 Bài tập mở rộng
-[Câu hỏi thêm để rèn luyện]
+## 🔍 Giải thích Test Cases
+[Giải thích ý nghĩa từng test case cho người mới]
+- **Test Case 1:** [Giải thích test case đầu tiên]
+- **Test Case 2:** [Giải thích test case thứ hai]
+- **Kết luận:** [Tổng kết về test cases]
+
+## 💻 Code và Giải thích
+
+### Phương pháp [Tên phương pháp]
+**Ý tưởng:** [Giải thích ý tưởng giải quyết]
+
+\`\`\`python
+# [Code gốc với comment chi tiết từng dòng]
+[Code gốc + comment tiếng Việt]
+\`\`\`
+
+**Giải thích chi tiết:**
+1. **Dòng X:** [Giải thích dòng code này làm gì]
+2. **Dòng Y:** [Giải thích dòng code này làm gì]
+3. **Kết quả:** [Giải thích kết quả cuối cùng]
+
+**Độ phức tạp:**
+- **Thời gian:** O(...)
+- **Không gian:** O(...)
 
 ## 📚 Tài liệu tham khảo
-[Links học thêm]
+### Học thêm:
+- [Link 1: Khái niệm cơ bản]
+- [Link 2: Thuật toán liên quan]
+
+### Câu hỏi mở rộng:
+1. [Câu hỏi để tự học thêm 1]
+2. [Câu hỏi để tự học thêm 2]
+3. [Câu hỏi để tự học thêm 3]
+
+---
+${BRAND_INFO}
 \`\`\`
 
 OUTPUT: Trả về nội dung markdown hoàn chỉnh theo format trên.
@@ -117,24 +121,27 @@ ${testCase}
 `).join('\n')}
 
 ===== YÊU CẦU =====
-Hãy chuyển đổi nội dung trên thành bài tập tiếng Việt hoàn chỉnh theo format markdown đã chỉ định.
+Hãy chuyển đổi nội dung trên thành bài tập tiếng Việt theo QUY TRÌNH GIẢNG DẠY đã chỉ định.
 
 LƯU Ý QUAN TRỌNG:
-- TUYỆT ĐỐI giữ nguyên tất cả test cases (input/output)
-- Chỉ thêm comment tiếng Việt vào code, không sửa logic
-- Dịch tự nhiên, không dịch máy
-- Thêm giá trị cho người học
+- TUYỆT ĐỐI giữ nguyên tất cả test cases và code (chỉ thêm comment)
+- Ngôn ngữ đơn giản cho người chưa từng học lập trình
+- Giải thích thuật ngữ kỹ thuật khi xuất hiện
+- Tạo cảm giác thân thiện, khuyến khích
+- Phù hợp lập trình nói chung, không chỉ Python
         `
     }
 
     static validateOutput(output: string): boolean {
-        // Kiểm tra có đủ các section cần thiết
+        // Kiểm tra có đủ các section theo quy trình mới
         const requiredSections = [
             '# ', // Title
-            '## 📋 Thông tin bài tập',
-            '## 🎯 Mô tả bài toán',
-            '## 🔧 Các phương pháp giải',
-            '## 🧪 Test Cases'
+            '## 📝 Đề bài',
+            '## 💡 Giải thích đề bài',
+            '## 🧪 Test Cases',
+            '## 🔍 Giải thích Test Cases',
+            '## 💻 Code và Giải thích',
+            '## 📚 Tài liệu tham khảo'
         ]
 
         return requiredSections.every(section => output.includes(section))
@@ -142,10 +149,11 @@ LƯU Ý QUAN TRỌNG:
 
     static extractMetadata(output: string): {
         title: string
-        difficulty: string
-        estimatedTime: string
+        objective: string
+        inputType: string
+        outputType: string
         concepts: string[]
-        tags: string[]
+        difficulty: string
     } {
         const lines = output.split('\n')
 
@@ -153,21 +161,25 @@ LƯU Ý QUAN TRỌNG:
         const titleLine = lines.find(line => line.startsWith('# '))
         const title = titleLine ? titleLine.replace('# ', '') : 'Untitled'
 
-        // Extract metadata from info section
-        const difficulty = this.extractValue(output, '**Độ khó:**') || 'Trung bình'
-        const estimatedTime = this.extractValue(output, '**Thời gian:**') || '30 phút'
-        const conceptsStr = this.extractValue(output, '**Kiến thức:**') || ''
-        const tagsStr = this.extractValue(output, '**Tags:**') || ''
+        // Extract metadata from explanation section
+        const objective = this.extractValue(output, '**Mục tiêu:**') || 'Học lập trình cơ bản'
+        const inputType = this.extractValue(output, '**Input:**') || 'Dữ liệu đầu vào'
+        const outputType = this.extractValue(output, '**Output:**') || 'Kết quả đầu ra'
 
+        // Extract concepts from terminology section
+        const conceptsStr = this.extractValue(output, '**Thuật ngữ:**') || ''
         const concepts = conceptsStr.split(',').map(c => c.trim()).filter(c => c)
-        const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t)
+
+        // Determine difficulty based on content complexity
+        const difficulty = this.determineDifficulty(output)
 
         return {
             title,
-            difficulty,
-            estimatedTime,
+            objective,
+            inputType,
+            outputType,
             concepts,
-            tags
+            difficulty
         }
     }
 
@@ -175,5 +187,17 @@ LƯU Ý QUAN TRỌNG:
         const regex = new RegExp(`${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*(.+)`)
         const match = text.match(regex)
         return match ? match[1].trim() : ''
+    }
+
+    private static determineDifficulty(output: string): string {
+        const content = output.toLowerCase()
+
+        if (content.includes('vòng lặp') && content.includes('điều kiện') && content.includes('mảng')) {
+            return 'Khó'
+        } else if (content.includes('vòng lặp') || content.includes('điều kiện')) {
+            return 'Trung bình'
+        } else {
+            return 'Dễ'
+        }
     }
 } 

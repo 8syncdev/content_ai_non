@@ -515,66 +515,82 @@ export class ContentScraper {
             const fileName = `${formattedProblemName}.md`
             const filePath = path.join(topicDir, fileName)
 
-            // Tạo nội dung markdown chi tiết
-            let markdownContent = `# ${content.title}\n\n`
+            let markdownContent: string
 
-            if (content.description) {
-                markdownContent += `## 📋 Mô tả bài toán\n${content.description}\n\n`
-            }
+            // Kiểm tra xem content có được AI xử lý hay không
+            if ((content as any).aiEnhanced && (content as any).description) {
+                log(`🤖 Using AI-enhanced content for: ${content.title}`)
+                log(`📝 AI template: ${(content as any).aiTemplate}`)
+                log(`⏱️ AI processing time: ${(content as any).aiProcessingTime}ms`)
 
-            // Nếu có methods chi tiết
-            if (content.methods.length > 0) {
-                content.methods.forEach((method, index) => {
-                    markdownContent += `## ${method.name}\n\n`
+                // Sử dụng AI-processed markdown trực tiếp
+                markdownContent = (content as any).description
 
-                    if (method.description) {
-                        markdownContent += `### Mô tả\n${method.description}\n\n`
-                    }
+                log(`📏 AI content length: ${markdownContent.length} characters`)
+            } else {
+                log(`📄 Using original content format for: ${content.title}`)
 
-                    if (method.sourceCode) {
-                        markdownContent += `### 💻 Source Code\n\`\`\`python\n${method.sourceCode}\n\`\`\`\n\n`
-                    }
+                // Tạo nội dung markdown theo format cũ
+                markdownContent = `# ${content.title}\n\n`
 
-                    if (method.explanation) {
-                        markdownContent += `### 📝 Giải thích\n${method.explanation}\n\n`
-                    }
+                if (content.description) {
+                    markdownContent += `## 📋 Mô tả bài toán\n${content.description}\n\n`
+                }
 
-                    if (method.testCases.length > 0) {
-                        markdownContent += `### 🧪 Test Cases\n`
-                        method.testCases.forEach((testCase, tcIndex) => {
-                            markdownContent += `**Test case ${tcIndex + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
+                // Nếu có methods chi tiết
+                if (content.methods.length > 0) {
+                    content.methods.forEach((method, index) => {
+                        markdownContent += `## ${method.name}\n\n`
+
+                        if (method.description) {
+                            markdownContent += `### Mô tả\n${method.description}\n\n`
+                        }
+
+                        if (method.sourceCode) {
+                            markdownContent += `### 💻 Source Code\n\`\`\`python\n${method.sourceCode}\n\`\`\`\n\n`
+                        }
+
+                        if (method.explanation) {
+                            markdownContent += `### 📝 Giải thích\n${method.explanation}\n\n`
+                        }
+
+                        if (method.testCases.length > 0) {
+                            markdownContent += `### 🧪 Test Cases\n`
+                            method.testCases.forEach((testCase, tcIndex) => {
+                                markdownContent += `**Test case ${tcIndex + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
+                            })
+                        }
+
+                        if (method.complexity) {
+                            markdownContent += `### ⚡ Complexity\n${method.complexity}\n\n`
+                        }
+
+                        markdownContent += `---\n\n`
+                    })
+                } else {
+                    // Fallback nếu không có methods
+                    if (content.solutions.length > 0) {
+                        markdownContent += `## 💻 Solutions\n\n`
+                        content.solutions.forEach((solution, index) => {
+                            markdownContent += `### Solution ${index + 1}\n\`\`\`python\n${solution}\n\`\`\`\n\n`
                         })
                     }
 
-                    if (method.complexity) {
-                        markdownContent += `### ⚡ Complexity\n${method.complexity}\n\n`
+                    if (content.testCases.length > 0) {
+                        markdownContent += `## 🧪 Test Cases\n\n`
+                        content.testCases.forEach((testCase, index) => {
+                            markdownContent += `**Test case ${index + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
+                        })
                     }
-
-                    markdownContent += `---\n\n`
-                })
-            } else {
-                // Fallback nếu không có methods
-                if (content.solutions.length > 0) {
-                    markdownContent += `## 💻 Solutions\n\n`
-                    content.solutions.forEach((solution, index) => {
-                        markdownContent += `### Solution ${index + 1}\n\`\`\`python\n${solution}\n\`\`\`\n\n`
-                    })
                 }
 
-                if (content.testCases.length > 0) {
-                    markdownContent += `## 🧪 Test Cases\n\n`
-                    content.testCases.forEach((testCase, index) => {
-                        markdownContent += `**Test case ${index + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
-                    })
-                }
+                // Thêm thông tin nguồn
+                markdownContent += `---\n\n**Nguồn:** [${content.url}](${content.url})\n\n`
+                markdownContent += `**Thời gian tạo:** ${new Date().toLocaleString('vi-VN')}\n`
             }
 
-            // Thêm thông tin nguồn
-            markdownContent += `---\n\n**Nguồn:** [${content.url}](${content.url})\n\n`
-            markdownContent += `**Thời gian tạo:** ${new Date().toLocaleString('vi-VN')}\n`
-
             await fs.writeFile(filePath, markdownContent, 'utf-8')
-            log(`📁 Exported: ${filePath}`)
+            log(`💾 Exported: ${filePath}`)
         } catch (error) {
             log(`❌ Export error: ${error.message}`)
             throw error

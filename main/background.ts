@@ -70,47 +70,68 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
 
     let finalContent = content
 
-    // AI Processing if enabled
-    if (aiOptions && aiOptions.templateType && aiOptions.templateType !== 'raw') {
-      log(`🤖 AI Processing ENABLED`)
-      log(`📋 AI Options received: ${JSON.stringify(aiOptions)}`)
-      log(`🎯 Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+    // AI Processing if enabled - Kiểm tra chi tiết hơn
+    log(`🔍 Checking AI options: ${JSON.stringify(aiOptions)}`)
 
-      try {
-        log(`🔄 Starting AI processing...`)
-        const aiResult = await aiActions.processContent(content, aiOptions)
-        log(`📊 AI Result: success=${aiResult.success}, processingTime=${aiResult.processingTime}ms`)
+    if (aiOptions) {
+      log(`📋 AI Options found:`)
+      log(`  - templateType: ${aiOptions.templateType}`)
+      log(`  - policy: ${aiOptions.policy}`)
+      log(`  - useStream: ${aiOptions.useStream}`)
 
-        if (aiResult.success && aiResult.data) {
-          log(`✅ AI processing successful`)
-          log(`📏 AI output length: ${aiResult.data.length} characters`)
-          log(`🏷️ AI metadata: ${JSON.stringify(aiResult.metadata)}`)
+      // Kiểm tra điều kiện AI processing
+      const shouldProcessWithAI = aiOptions.templateType &&
+        aiOptions.templateType !== 'raw' &&
+        (aiOptions.templateType === 'exercise' || aiOptions.templateType === 'lesson')
 
-          // Use AI-processed markdown as description
-          finalContent = {
-            ...content,
-            title: aiResult.metadata?.title || content.title,
-            description: aiResult.data, // AI-generated markdown
-            aiEnhanced: true,
-            aiTemplate: aiOptions.templateType,
-            aiProcessingTime: aiResult.processingTime,
-            originalDescription: content.description
+      log(`🤖 Should process with AI: ${shouldProcessWithAI}`)
+
+      if (shouldProcessWithAI) {
+        log(`🤖 AI Processing ENABLED`)
+        log(`🎯 Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+
+        try {
+          log(`🔄 Starting AI processing...`)
+          log(`📊 Content structure:`)
+          log(`  - Title: ${content.title}`)
+          log(`  - Description length: ${content.description?.length || 0}`)
+          log(`  - Methods count: ${content.methods?.length || 0}`)
+          log(`  - Test cases count: ${content.testCases?.length || 0}`)
+
+          const aiResult = await aiActions.processContent(content, aiOptions)
+          log(`📊 AI Result: success=${aiResult.success}, processingTime=${aiResult.processingTime}ms`)
+
+          if (aiResult.success && aiResult.data) {
+            log(`✅ AI processing successful`)
+            log(`📏 AI output length: ${aiResult.data.length} characters`)
+            log(`🏷️ AI metadata: ${JSON.stringify(aiResult.metadata)}`)
+
+            // Use AI-processed markdown as description
+            finalContent = {
+              ...content,
+              title: aiResult.metadata?.title || content.title,
+              description: aiResult.data, // AI-generated markdown
+              aiEnhanced: true,
+              aiTemplate: aiOptions.templateType,
+              aiProcessingTime: aiResult.processingTime,
+              originalDescription: content.description
+            }
+
+            log(`🎨 Final content prepared with AI enhancement`)
+            log(`📝 Final description length: ${finalContent.description.length}`)
+          } else {
+            log(`⚠️ AI processing failed: ${aiResult.error}`)
+            log(`📄 Using original content as fallback`)
           }
-
-          log(`🎨 Final content prepared with AI enhancement`)
-        } else {
-          log(`⚠️ AI processing failed: ${aiResult.error}`)
+        } catch (aiError) {
+          log(`❌ AI processing error: ${aiError.message}`)
           log(`📄 Using original content as fallback`)
         }
-      } catch (aiError) {
-        log(`❌ AI processing error: ${aiError.message}`)
-        log(`📄 Using original content as fallback`)
+      } else {
+        log(`📝 AI Processing DISABLED - Invalid template type or raw selected`)
       }
     } else {
-      log(`📝 AI Processing DISABLED or invalid options`)
-      if (aiOptions) {
-        log(`🔍 AI Options: ${JSON.stringify(aiOptions)}`)
-      }
+      log(`📝 AI Processing DISABLED - No AI options provided`)
     }
 
     log(`💾 Exporting final content...`)

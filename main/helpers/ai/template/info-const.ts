@@ -93,4 +93,9 @@ PHONG CÁCH VIẾT:
 - Sử dụng emoji phù hợp
 - Tạo cảm giác thân thiện
 - Khuyến khích người học
-` 
+`
+
+// Brand information
+export const BRAND_INFO = `Tác giả: Nguyễn Phương Anh Tú
+Facebook: https://www.facebook.com/dev.alex.698447
+Phone: 0767449819` 
