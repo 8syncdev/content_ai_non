@@ -29,22 +29,19 @@ export interface ProblemMethod {
 
 export interface AIProcessingOptions {
     templateType: 'exercise' | 'lesson' | 'raw'
-    useStream: boolean
-    policy: 'fast' | 'balanced' | 'quality'
-    customPrompt?: string
+    useAI: boolean
+    apiKey?: string
 }
 
 export interface AIResponse {
     success: boolean
     data?: string
     error?: string
-    rawResponse?: string
     processingTime?: number
-    metadata?: any
 }
 
 export interface AIConfig {
-    provider: 'mistral' | 'openai' | 'claude'
+    provider: 'mistral'
     apiKey: string
     model: string
     temperature: number
@@ -63,8 +60,7 @@ declare global {
             }
             ai: {
                 processContent: (content: ProblemContent, options: AIProcessingOptions) => Promise<AIResponse>
-                processContentStream: (content: ProblemContent, options: AIProcessingOptions) => Promise<{ success: boolean; stream?: any; error?: string }>
-                updateConfig: (config: Partial<AIConfig>) => Promise<{ success: boolean; error?: string }>
+                setApiKey: (apiKey: string) => Promise<{ success: boolean; error?: string }>
             }
             versions: {
                 node: () => string

@@ -32,8 +32,7 @@ contextBridge.exposeInMainWorld('electron', {
   // AI APIs
   ai: {
     processContent: (content: any, options: any) => ipcRenderer.invoke('ai:processContent', content, options),
-    processContentStream: (content: any, options: any) => ipcRenderer.invoke('ai:processContentStream', content, options),
-    updateConfig: (config: any) => ipcRenderer.invoke('ai:updateConfig', config),
+    setApiKey: (apiKey: string) => ipcRenderer.invoke('ai:setApiKey', apiKey),
   },
 
   // System APIs

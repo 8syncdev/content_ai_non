@@ -57,8 +57,7 @@ function ScraperPage() {
   const [useAI, setUseAI] = useState(false)
   const [aiOptions, setAiOptions] = useState<AIProcessingOptions>({
     templateType: 'exercise',
-    useStream: false,
-    policy: 'balanced'
+    useAI: false
   })
   const [aiApiKey, setAiApiKey] = useState('')
 
@@ -103,49 +102,22 @@ function ScraperPage() {
     }
   ]
 
-  // Template configurations
+  // Template configurations (simplified)
   const templateConfigs = {
     exercise: {
-      name: 'Bài tập lập trình',
-      description: 'Chuyển đổi nội dung crawl thành bài tập có cấu trúc tiếng Việt',
-      icon: '📝',
-      features: [
-        'Dịch sang tiếng Việt tự nhiên',
-        'Cấu trúc markdown chuẩn',
-        'Giải thích code chi tiết',
-        'Giữ nguyên test cases gốc',
-        'Thêm ví dụ minh họa'
-      ]
+      name: 'Bài tập',
+      description: 'Chuyển thành bài tập lập trình tiếng Việt',
+      icon: '📝'
     },
     lesson: {
       name: 'Bài học',
-      description: 'Chuyển đổi thành bài học có cấu trúc rõ ràng cho người mới học',
-      icon: '📚',
-      features: [
-        'Ngôn ngữ dễ hiểu cho người mới',
-        'Bố cục bài học logic',
-        'Ví dụ thực tế phong phú',
-        'Câu hỏi ôn tập',
-        'Tài liệu tham khảo'
-      ]
-    }
-  }
-
-  const policyConfigs = {
-    fast: {
-      name: 'Xử lý nhanh',
-      description: 'Xử lý nhanh, phù hợp cho content đơn giản',
-      icon: '⚡'
+      description: 'Chuyển thành bài học có cấu trúc',
+      icon: '📚'
     },
-    balanced: {
-      name: 'Cân bằng',
-      description: 'Cân bằng giữa chất lượng và tốc độ',
-      icon: '⚖️'
-    },
-    quality: {
-      name: 'Chất lượng cao',
-      description: 'Xử lý chất lượng cao, phù hợp cho content phức tạp',
-      icon: '💎'
+    raw: {
+      name: 'Gốc',
+      description: 'Giữ nguyên định dạng gốc',
+      icon: '📄'
     }
   }
 
@@ -161,7 +133,7 @@ function ScraperPage() {
   // Update AI config when API key changes
   useEffect(() => {
     if (aiApiKey && window.electron?.ai) {
-      window.electron.ai.updateConfig({ apiKey: aiApiKey })
+      window.electron.ai.setApiKey(aiApiKey)
         .then(result => {
           if (result.success) {
             addLog(`🔧 Đã cập nhật AI API key`)
@@ -248,7 +220,6 @@ function ScraperPage() {
     // Log AI settings
     if (useAI) {
       addLog(`🤖 AI Processing: ${templateConfigs[aiOptions.templateType]?.name || aiOptions.templateType}`)
-      addLog(`⚙️ Policy: ${policyConfigs[aiOptions.policy]?.name || aiOptions.policy}`)
     } else {
       addLog(`📝 Sử dụng nội dung gốc (không AI)`)
     }
@@ -292,11 +263,11 @@ function ScraperPage() {
           const result = await window.electron.scraper.getProblemContent(problem.url)
           if (result.success && result.data) {
             // Prepare AI options if enabled
-            const finalAiOptions = useAI ? aiOptions : undefined
+            const finalAiOptions = useAI ? { ...aiOptions, useAI: true, apiKey: aiApiKey } : undefined
 
             // Debug logs for AI processing
             if (useAI) {
-              addLog(`🤖 AI enabled - Template: ${aiOptions.templateType}, Policy: ${aiOptions.policy}`)
+              addLog(`🤖 AI enabled - Template: ${aiOptions.templateType}`)
               addLog(`🔧 AI Options: ${JSON.stringify(finalAiOptions)}`)
             } else {
               addLog(`📝 Using original content (AI disabled)`)
@@ -504,7 +475,6 @@ function ScraperPage() {
             <Bot className="w-4 h-4 mr-2" />
             <span className="text-sm font-medium">
               🤖 AI Enhancement: {templateConfigs[aiOptions.templateType]?.name}
-              ({policyConfigs[aiOptions.policy]?.name})
             </span>
           </div>
         </div>
@@ -807,7 +777,10 @@ function ScraperPage() {
           <div className="flex items-center space-x-3">
             <span className="text-primary font-medium">Sử dụng AI</span>
             <button
-              onClick={() => setUseAI(!useAI)}
+              onClick={() => {
+                setUseAI(!useAI)
+                setAiOptions(prev => ({ ...prev, useAI: !useAI }))
+              }}
               className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${useAI ? 'ai-toggle-on' : 'ai-toggle-off'}`}
             >
               <span
@@ -863,22 +836,18 @@ function ScraperPage() {
             {/* Template Selection */}
             <div>
               <h4 className="text-lg font-bold text-primary mb-4">Chọn Template</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(templateConfigs).map(([key, config]) => (
                   <div
                     key={key}
                     onClick={() => setAiOptions(prev => ({ ...prev, templateType: key as any }))}
                     className={`cursor-pointer border-2 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 ${aiOptions.templateType === key ? 'ai-template-selected' : 'ai-template-unselected'}`}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center">
-                        <span className="text-2xl mr-3">{config.icon}</span>
-                        <div>
-                          <h5 className="font-bold text-primary">{config.name}</h5>
-                          <p className="text-secondary text-sm">{config.description}</p>
-                        </div>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${aiOptions.templateType === key
+                    <div className="text-center">
+                      <span className="text-3xl mb-3 block">{config.icon}</span>
+                      <h5 className="font-bold text-primary mb-2">{config.name}</h5>
+                      <p className="text-secondary text-sm">{config.description}</p>
+                      <div className={`w-6 h-6 rounded-full border-2 mx-auto mt-3 flex items-center justify-center transition-all ${aiOptions.templateType === key
                         ? 'border-purple-500 bg-purple-500'
                         : 'border-gray-300'
                         }`}>
@@ -886,37 +855,6 @@ function ScraperPage() {
                           <CheckCircle className="w-4 h-4 text-white" />
                         )}
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      {config.features.map((feature, index) => (
-                        <div key={index} className="flex items-center text-sm text-secondary">
-                          <CheckCircle className="w-3 h-3 text-green-500 mr-2" />
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Policy Selection */}
-            <div>
-              <h4 className="text-lg font-bold text-primary mb-4">Chính sách xử lý</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(policyConfigs).map(([key, config]) => (
-                  <div
-                    key={key}
-                    onClick={() => setAiOptions(prev => ({ ...prev, policy: key as any }))}
-                    className={`cursor-pointer border-2 rounded-2xl p-4 transition-all duration-300 transform hover:scale-105 ${aiOptions.policy === key
-                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg scale-105'
-                      : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-lg'
-                      }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl mb-2">{config.icon}</div>
-                      <h5 className="font-bold text-primary mb-1">{config.name}</h5>
-                      <p className="text-secondary text-sm">{config.description}</p>
                     </div>
                   </div>
                 ))}
@@ -929,42 +867,18 @@ function ScraperPage() {
               <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
                 <div className="flex items-center mb-4">
                   <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
-                  <span className="font-medium text-yellow-800">API Key (Tùy chọn)</span>
+                  <span className="font-medium text-yellow-800">Mistral API Key</span>
                 </div>
                 <input
                   type="password"
                   value={aiApiKey}
                   onChange={(e) => setAiApiKey(e.target.value)}
-                  placeholder="Nhập Mistral API key của bạn (để trống sẽ dùng key mặc định)"
+                  placeholder="Nhập Mistral API key của bạn (bắt buộc để sử dụng AI)"
                   className="input-primary"
                 />
                 <p className="text-yellow-700 text-sm mt-2">
-                  💡 Để trống sẽ sử dụng key demo. Để có kết quả tốt nhất, hãy sử dụng API key riêng của bạn.
+                  💡 Cần API key để sử dụng AI. Không có key sẽ chỉ dùng template đơn giản.
                 </p>
-              </div>
-            </div>
-
-            {/* Stream Option */}
-            <div>
-              <h4 className="text-lg font-bold text-primary mb-4">Tùy chọn nâng cao</h4>
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Activity className="w-5 h-5 text-secondary mr-3" />
-                    <div>
-                      <h5 className="font-medium text-primary">Stream Processing</h5>
-                      <p className="text-secondary text-sm">Xử lý theo thời gian thực (chậm hơn nhưng có thể theo dõi)</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setAiOptions(prev => ({ ...prev, useStream: !prev.useStream }))}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${aiOptions.useStream ? 'bg-blue-600' : 'bg-gray-300'}`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${aiOptions.useStream ? 'translate-x-6' : 'translate-x-1'}`}
-                    />
-                  </button>
-                </div>
               </div>
             </div>
           </div>

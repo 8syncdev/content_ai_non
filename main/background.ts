@@ -104,12 +104,10 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
           if (aiResult.success && aiResult.data) {
             log(`✅ AI processing successful`)
             log(`📏 AI output length: ${aiResult.data.length} characters`)
-            log(`🏷️ AI metadata: ${JSON.stringify(aiResult.metadata)}`)
 
             // Use AI-processed markdown as description
             finalContent = {
               ...content,
-              title: aiResult.metadata?.title || content.title,
               description: aiResult.data, // AI-generated markdown
               aiEnhanced: true,
               aiTemplate: aiOptions.templateType,
@@ -144,39 +142,16 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
   }
 })
 
-// AI-specific handlers
-ipcMain.handle('ai:processContent', async (_, content: any, options: any) => {
+// AI Handlers
+ipcMain.handle('ai:processContent', async (event, content, options) => {
   try {
-    log(`🤖 Processing content with AI: ${content.title}`)
     const result = await aiActions.processContent(content, options)
-    log(`✅ AI processing completed in ${result.processingTime}ms`)
     return result
   } catch (error) {
-    log(`❌ AI processing failed: ${error.message}`)
-    return { success: false, error: error.message }
-  }
-})
-
-ipcMain.handle('ai:processContentStream', async (_, content: any, options: any) => {
-  try {
-    log(`🤖 Processing content with AI stream: ${content.title}`)
-    const result = await aiActions.processContentStream(content, options)
-    log(`✅ AI stream processing initiated`)
-    return result
-  } catch (error) {
-    log(`❌ AI stream processing failed: ${error.message}`)
-    return { success: false, error: error.message }
-  }
-})
-
-ipcMain.handle('ai:updateConfig', async (_, config: any) => {
-  try {
-    aiActions.updateConfig(config)
-    log(`🔧 AI config updated`)
-    return { success: true }
-  } catch (error) {
-    log(`❌ Failed to update AI config: ${error.message}`)
-    return { success: false, error: error.message }
+    return {
+      success: false,
+      error: error.message || 'Lỗi xử lý AI không xác định'
+    }
   }
 })
 
@@ -192,6 +167,18 @@ ipcMain.handle('scraper:close', async () => {
   } catch (error) {
     log(`❌ Failed to close scraper: ${error.message}`)
     return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('ai:setApiKey', async (event, apiKey) => {
+  try {
+    aiActions.setApiKey(apiKey)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || 'Lỗi cấu hình API key'
+    }
   }
 })
 
