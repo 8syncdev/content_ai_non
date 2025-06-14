@@ -1,0 +1,1036 @@
+Xây dựng một ứng dụng bằng framework Nextron Desktop App ui-ux đẹp performance tốt, optimize code mạnh
+home.tsx
+next.tsx (là ví dụ trang kế)
+nên tạo dạng sidebar đóng mở để dễ tương tác nav tới nhiều trang (chưa nhiều tools)
+nội dụng hiển thị là tiếng việt
+icon lucid react
+component tự viết để tái sử dụng (tailwind full)
+utils, libs, contexts,.. có thể có hoặc chưa cần
+ui framework tailwindcss
+
+
+Trang này là trang tạo content bài tập lập trình
+dùng code ts để làm tính quét dữ liệu rồi xuất ra file 
+toàn đặt trong temp/export/{name}
+
+dùng thư viện playwright để lấy dữ liệu thông tin website và control website
+
+code thiết lập kham khảo đang code python và chuyển về dạng ts:
+# -*- coding: utf-8 -*-
+import asyncio
+from playwright.async_api import async_playwright
+from playwright_stealth import stealth_async
+from lxml.html.soupparser import fromstring
+from settings import FILE_PATH
+
+
+path_to_extension = "./my-extension"
+user_data_dir  = "./tmp/test-user-data-dir"
+
+async def search_dev_to(url: str = 'https://dev.to/colinreed/deepl-alternatives-exploring-the-best-translation-tools-174e'):
+    async with async_playwright() as p:
+            browser = await p.chromium.launch_persistent_context(
+                user_data_dir
+            )
+            page = await browser.new_page()
+            await stealth_async(page)
+
+            await page.goto(url)
+            # await page.screenshot(path=f'example-{p.chromium.name}.png')
+
+            # Lấy ra toàn bộ mã nguồn thông tin trong website
+
+            content = await page.content()
+
+
+            from bs4 import BeautifulSoup
+
+            soup = BeautifulSoup(content)
+
+            el = soup.find(attrs={
+                  # "class" : "crayons-article__main"
+                  # find class="post-body__main post-content"
+                  "class" : "post-body__main post-content"
+            })
+
+            content = el.text
+            
+            with open(FILE_PATH, "w", encoding="utf-8") as f:
+                  f.write(content if content else "")
+
+            await browser.close()
+
+
+# asyncio.get_event_loop().run_until_complete(main())
+
+
+đầu tiên vào link: https://www.sanfoundry.com/python-problems-solutions/
+
+sau đó lấy ra toàn bộ chủ đề và link các bài của chủ đề đó, của dạng html sau:
+<main id="main" class="site-main">
+			
+<article id="post-140355" class="post-140355 page type-page status-publish" itemtype="https://schema.org/CreativeWork" itemscope="">
+	<div class="inside-article" bis_skin_checked="1">
+		
+			<header class="entry-header">
+				<h1 class="entry-title" itemprop="headline">Python Programming Examples</h1>			</header><!-- .entry-header -->
+
+		
+		<div class="entry-content" itemprop="text" bis_skin_checked="1">
+			<p><noscript><img src="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png" alt="Python Programming Examples" width="150" height="150" class="sf-top-img2 alignleft size-full wp-image-346117" srcset="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png 200w, https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img-150x150.png 150w" sizes="(max-width: 150px) 100vw, 150px" /></noscript><img src="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png" data-src="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png" alt="Python Programming Examples" width="150" height="150" class="sf-top-img2 alignleft size-full wp-image-346117 ls-is-cached lazyloaded" data-srcset="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png 200w, https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img-150x150.png 150w" data-sizes="(max-width: 150px) 100vw, 150px" sizes="(max-width: 150px) 100vw, 150px" srcset="https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img.png 200w, https://www.sanfoundry.com/wp-content/uploads/2021/06/1000-python-programs-img-150x150.png 150w"></p>
+<p>Python is an interpreted, object-oriented, and high-level programming language with dynamic semantics. Python is an easy-to-use, beginner-friendly programming language primarily used for web development, application and game development, AI, ML, automation, Software development, GUI development, etc. This section contains a wide range of Python programming examples from basic programs to complex and advanced Python programs.</p>
+<div style="clear:left;" bis_skin_checked="1"></div>
+<p>These examples range from simple Python programs to Mathematical functions, lists, strings, sets, Python dictionaries, tuples, recursions, file handling, classes and objects, linked list, stacks, queues, searching and sorting, trees, heap, graphs, games, greedy algorithms, and dynamic programming. Every example program includes the problem description, problem solution, source code, program explanation, and run-time test cases. All Python examples have been compiled and tested on Windows and Linux systems.</p>
+<div class="sf-mobile-ads" style="padding-bottom: 20px;" bis_skin_checked="1">
+<div id="9f8aa9b5-2c42-4296-896e-70772ed1db59" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function() {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("9f8aa9b5-2c42-4296-896e-70772ed1db59");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("9f8aa9b5-2c42-4296-896e-70772ed1db59");
+      }
+    });
+</script>
+</div>
+</div>
+        
+<div class="sf-toc clearfix" bis_skin_checked="1">
+<strong>Here is the listing of Python Topics:</strong><p></p>
+<div class="sf-lcol" bis_skin_checked="1">
+<ul>
+<li><a href="#python-basic-programs">Simple Python Programs</a></li>
+<li><a href="#python-programs-numbers">Python Programs on Numbers</a></li>
+<li><a href="#factorial-fibonacci-programs-python">Factorial &amp; Fibonacci Programs in Python</a></li>
+<li><a href="#conversion-programs-python">Conversion Programs in Python</a></li>
+<li><a href="#pattern-programs-python">Pattern Programs in Python</a></li>
+<li><a href="#python-programs-math-functions">Python Programs on Math Functions</a></li>
+<li><a href="#python-programs-progression-series">Python Programs on Progression Series</a></li>
+<li><a href="#python-programs-gcd-lcm">Python Programs on GCD and LCM</a></li>
+<li><a href="#python-programs-strings">Python Programs on Strings</a></li>
+<li><a href="#python-programs-dictionary">Python Programs on Dictionary</a></li>
+<li><a href="#python-programs-tuples">Python Programs on Tuples</a></li>
+<li><a href="#python-programs-classes-objects">Python Programs on Classes &amp; Objects</a></li>
+<li><a href="#python-programs-file-handling">Python Programs on File Handling</a></li>
+<li><a href="#python-programs-list">Python Programs on List</a></li>
+</ul>
+</div>
+<div class="sf-rcol" bis_skin_checked="1">
+<ul>
+<li><a href="#python-programs-linked-list">Python Programs on Linked List</a></li>
+<li><a href="#python-programs-singly-linked-list">Python Programs on Singly Linked List</a></li>
+<li><a href="#python-programs-doubly-linked-list">Python Programs on Doubly Linked List</a></li>
+<li><a href="#python-programs-stack">Python Programs on Stack</a></li>
+<li><a href="#python-programs-queue">Python Programs on Queue</a></li>
+<li><a href="#python-programs-tree">Python Programs on Tree</a></li>
+<li><a href="#python-programs-heap">Python Programs on Heap</a></li>
+<li><a href="#python-programs-graph">Python Programs on Graph</a></li>
+<li><a href="#python-programs-searching">Python Programs on Searching</a></li>
+<li><a href="#python-programs-sorting">Python Programs on Sorting</a></li>
+<li><a href="#python-programs-gaming">Python Programs on Gaming</a></li>
+<li><a href="#python-greedy-algorithms">Python Greedy Algorithms</a></li>
+<li><a href="#python-programs-dynamic-programming">Python Programs on Dynamic Programming</a></li>
+</ul>
+</div>
+</div>
+<div bis_skin_checked="1">
+<a id="python-basic-programs"></a><p></p>
+<h2 class="programs-tlp-h2">Simple Python Programs</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-determine-even-odd-recursively/">Python Program to Check Whether a Given Number is Even or Odd using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-whether-number-positive-negative/">Python Program to Check Whether a Number is Positive or Negative</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-odd-numbers-given-range/">Python Program to Print All Odd Numbers in a Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-number-palindrome/">Python Program to Check if a Number is a Palindrome</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-reverse-given-number/">Python Program to Reverse a Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-integers-are-not-divisible-range/">Python Program to Print All Integers that Aren’t Divisible by Either 2 or 3</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-numbers-given-range/">Python Program to Find Numbers which are Divisible by 7 and Multiple of 5 in a Given Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-numbers-range-divisible-given-number/">Python Program to Print All Numbers in a Range Divisible by a Given Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-digits-number/">Python Program to Find Sum of Digits of a Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-digits-number-recursively/">Python Program to Find Sum of Digit of a Number using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sum-digits-without-recursion/">Python Program to Find Sum of Digit of a Number Without Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-number-digits/">Python Program to Count the Number of Digits in a Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-generate-divisors-integer/">Python Program to Find All the Divisors of an Integer</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-smallest-divisor-integer/">Python Program to Find the Smallest Divisor of an Integer</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-binary-equivalent-number-recursively/">Python Program to Print Binary Equivalent of an Integer using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-binary-equivalent-number-without-recursion/">Python Program to Print Binary Equivalent of a Number without Using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-table-integer/">Python Program to Print Table of a Given Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-take-marks-5-subjects-display-grade/">Python Program to Calculate Grade of a Student</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-date-valid-print-incremented-date/">Python Program to Check if a Date is Valid and Print the Incremented Date if it is</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-given-year-leap-year/">Python Program to Check Whether a given Year is a Leap Year</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-height-centimeters-convert-height-feet-inches/">Python Program to Convert Centimeters to Feet and Inches</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-number-compute/">Python Program to Read a Number n and Compute n+nn+nnn</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-numbers"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Numbers</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-print-prime-number-range/">Python Program to Find Prime Numbers in a Given Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-prime-number/">Python Program to Check Prime Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-number-prime-recursion/">Python Program to Check whether a Number is Prime or Not using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-perfect-number/">Python Program to Check Whether a Given Number is Perfect Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-armstrong-number/">Python Program to Check Armstrong Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-first-n-natural-numbers/">Python Program to Find Sum of First N Natural Numbers</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-strong-number/">Python Program to Check if a Number is a Strong Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-numbers-no-loop/">Python Program to Print Numbers in a Range Without using Loops</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-pattern-2/">Python Program to Print the Natural Numbers Summation Pattern</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-compute-prime-factors-integer/">Python Program to Find the Prime Factors of a Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-numbers-amicable/">Python Program to Check If Two Numbers are Amicable Numbers or Not</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-whether-number-power-two/">Python Program to Find Whether a Number is a Power of Two</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-power-number-recursion/">Python Program to Calculate the Power using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-product-two-numbers-using-recursion/">Python Program to Find Product of Two Numbers using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-numbers-perfect-squares/">Python Program to Find All Perfect Squares in the Given Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-accept-digits-print-combinations/">Python Program to Print All Possible Combinations of Three Digits</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="factorial-fibonacci-programs-python"></a><p></p>
+<div class="sf-desktop-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center; margin-top:20px;" bis_skin_checked="1">advertisement</div>
+<div id="sf-ads-drbtf1" bis_skin_checked="1">
+<div id="00000001-21d27d11-db92-4758-bbb3-0745c110633b" class="_ap_apex_ad" style="max-height: 300px; text-align: center; margin: 0px auto; display: block;" data-section="00000001-21d27d11-db92-4758-bbb3-0745c110633b" data-orig-id="7cee830d-5f11-4a2b-b356-93cc453475a0" data-render-time="1749864061904" data-ap-network="adpTags" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if ( adpushup.config.platform === "DESKTOP" || adpushup.config.platform === "TABLET" ) {
+        adpushup.triggerAd("7cee830d-5f11-4a2b-b356-93cc453475a0");
+      }
+    });
+</script>
+<div id="ADP_41319_responsivexresponsive_00000001-21d27d11-db92-4758-bbb3-0745c110633b" style="text-align: center; margin: 0 auto;" bis_skin_checked="1" data-google-query-id="CI3D2Pje740DFQOkZgIduVkCZQ">
+
+<div id="google_ads_iframe_/103512698,22469541741/22048010844_0__container__" bis_skin_checked="1" style="border: 0pt none;"><iframe id="google_ads_iframe_/103512698,22469541741/22048010844_0" name="google_ads_iframe_/103512698,22469541741/22048010844_0" title="3rd party ad content" width="336" height="280" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" aria-label="Advertisement" tabindex="0" allow="private-state-token-redemption;attribution-reporting" data-google-container-id="1" style="border: 0px; vertical-align: bottom;" bis_precise_ad="1" bis_size="{&quot;x&quot;:248,&quot;y&quot;:3276,&quot;w&quot;:336,&quot;h&quot;:280,&quot;abs_x&quot;:248,&quot;abs_y&quot;:3276}" bis_id="fr_9jau989xyfi2bqvj59nimi" bis_depth="0" bis_chainid="6" data-load-complete="true"></iframe></div></div></div>
+</div>
+</div>
+	
+<h2 class="programs-tlp-h2">Factorial &amp; Fibonacci Programs in Python</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-find-fibonacci-series-recursion/">Python Program to Find Fibonacci Numbers using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-fibonacci-series-without-recursion/">Python Program to Find the Fibonacci Series Without using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-factorial-number-recursion/">Python Program to Find the Factorial of a Number using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-factorial-number-without-recursion/">Python Program to Find the Factorial of a Number Without Recursion</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="conversion-programs-python"></a><p></p>
+<h2 class="programs-tlp-h2">Conversion Programs in Python</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-convert-binary-gray-code/">Python Program to Convert Binary to Gray Code</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-generate-gray-codes-using-recursion/">Python Program to Generate Gray Codes using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-convert-gray-code-binary/">Python Program to Convert Gray to Binary Code</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-take-temperature-celsius-convert-fahrenheit/">Python Program to Convert Celsius to Fahrenheit</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="pattern-programs-python"></a><p></p>
+<h2 class="programs-tlp-h2">Pattern Programs in Python</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-pattern-4/">Python Program to Print an Inverted Star Pattern</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-pascal-triangle/">Python Program to Print Pascal Triangle</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-math-functions"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Math Functions</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-find-roots-equation/">Python Program to Find the Roots of a Quadratic Equation</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-area-triangle-given-three-sides/">Python Program to Find the Area of a Triangle</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-compute-simple-interest-given-required-values/">Python Program to Find Simple Interest</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-take-numbers-print-quotient-remainder/">Python Program to Find Quotient and Remainder of Two Numbers</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-determine-pythagorean-triplets-range/">Python Program to Find All Pythagorean Triplets in the Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-compute-polynomial-equation-coefficients-list/">Python Program to Compute a Polynomial Equation</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-exchange-values-two-numbers-without-using-temporary-variable/">Python Program to Swap Two Numbers without using Third Variable</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-set-bits-number/">Python Program to Count Set Bits in an Integer</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-clear-rightmost-set-bit-number/">Python Program to Clear the Rightmost Set Bit of a Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-test-collatz-conjecture-given-number/">Python Program to Test Collatz Conjecture for a Given Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-gravitational-force/">Python Program to Find the Gravitational Force between Two Objects</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-form-integer/">Python Program to Form an Integer that has Number of Digits at 10’s Place &amp; LSD at 1’s Place</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-pattern-3/">Python Program to Print an Identity Matrix</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-progression-series"></a><p></p>
+<div class="sf-mobile-ads" style="padding-bottom: 20px;" bis_skin_checked="1">
+<div id="32b92b8e-d18b-4e87-9c9d-63369f919456" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function() {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("32b92b8e-d18b-4e87-9c9d-63369f919456");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("32b92b8e-d18b-4e87-9c9d-63369f919456");
+      }
+    });
+</script>
+</div>
+</div>
+        
+<h2 class="programs-tlp-h2">Python Programs on Progression Series</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-series-1/">Python Program to Find Sum of Series 1 + 1/2 + 1/3 + 1/4 + ……. + 1/N</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-computer-value-euler-number/">Python Program to Find the Sum of the Series 1/1!+1/2!+1/3!+…1/N!</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-series-2/">Python Program to Find the Sum of the Series: 1 + x^2/2 + x^3/3 + … x^n/n</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-pattern-1/">Python Program to Read a Number n and Print the Series “1+2+…..+n= “</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-sine-series/">Python Program to Find the Sum of Sine Series</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-cosine-series/">Python Program to Find the Sum of Cosine Series</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-gcd-lcm"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on GCD and LCM</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-find-lcm-two-numbers/">Python Program to Find the LCM of Two Numbers</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-gcd-two-numbers/">Python Program to Find the GCD of Two Numbers</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-gcd-two-numbers-recursively/">Python Program to Find the GCD of Two Numbers using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-lcm-two-numbers-recursively/">Python Program to Find the LCM of Two Numbers using Recursion</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-strings"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Strings</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-check-string-pangram/">Python Program to Check if a String is a Pangram or Not</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-characters-odd-positions/">Python Program to Remove Odd Indexed Characters in a string</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-nth-index-character-non-empty-string/">Python Program to Remove the nth Index Character from a Non-Empty String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-replace-occurrences-string/">Python Program to Replace All Occurrences of ‘a’ with $ in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-take-string-replace-blank-hyphen/">Python Program to Replace Every Blank Space with Hyphen in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-reverse-string-using-recursion/">Python Program to Reverse a String using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-reverse-string-without-recursion/">Python Program to Reverse a String Without using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-determine-many-times-given-letter-occurs-string-recursively/">Python Program to Determine How Many Times a Given Letter Occurs in a String Recursively</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-calculate-length-string-without-library/">Python Program to Find the Length of a String without Library Function</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-calculate-number-words-characters-string/">Python Program to Count the Number of Words and Characters in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-number-lowercase-characters-string/">Python Program to Count Number of Lowercase Characters in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-number-vowels-string/">Python Program to Count the Number of Vowels in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-calculate-number-upper-lower-string/">Python Program to Count Number of Uppercase and Lowercase Letters in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-string-calculate-digits-letters/">Python Program to Count the Number of Digits and Letters in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-all-permutations-string-lexicographic-order-using-recursion/">Python Program to Print All Permutations of a String in Lexicographic Order using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-all-permutations-string-lexicographic-order-without-recursion/">Python Program to Print All Permutations of a String in Lexicographic Order without Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-substring-present-given-string/">Python Program to Check if the Substring is Present in the Given String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-common-letters-string/">Python Program to Find Common Characters in Two Strings</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-displays-letters-both-string/">Python Program to Print All Letters Present in Both Strings</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-letters-first-string-second/">Python Program that Displays which Letters are in First String but not in Second</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-displays-letters-both-strings-neither/">Python Program that Displays Letters that are not Common in Two Strings</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-form-new-string/">Python Program to Create a New String Made up of First and Last 2 Characters</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-display-larger-string-without-builtin/">Python Program to Find the Larger String without using Built-in Functions</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-string-first-last-character-exchanged/">Python Program to Swap the First and the Last Character of a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-accept-sequence-and-prints-alphabetically/">Python Program to Sort Hyphen Separated Sequence of Words in Alphabetical Order</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-occurrences-word-given-sentence/">Python Program to Count the Occurrences of Each Word in a String</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-vowels-string-sets/">Python Program to Count Number of Vowels in a String using Sets</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-string-palindrome/">Python Program to Check if a Given String is Palindrome</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-detect-strings-anagrams/" python="" program="" to="" check="" if="" a="" given="" string="" is="" palindrome="">Python Program to Check whether two Strings are Anagrams</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-string-palindrome-using-recursion/">Python Program to Check whether a String is Palindrome or not using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-odd-palindromes-without-recursion/">Python Program to Find All Odd Palindrome Numbers in a Range without using Recursion</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-dictionary"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Dictionary</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-form-dictionary-object-class/">Python Program to Create Dictionary from an Object</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-key-exists-dictionary/">Python Program to Check if a Key Exists in a Dictionary or Not</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-add-key-value-pair-dictionary/">Python Program to Add a Key-Value Pair to the Dictionary</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sum-items-dictionary/">Python Program to Find the Sum of All the Items in a Dictionary</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-multiply-items-dictionary/">Python Program to Multiply All the Items in a Dictionary</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-key-dictionary/">Python Program to Remove a Key from a Dictionary</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-concatenate-dictionaries/">Python Program to Concatenate Two Dictionaries</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-map-list-dictionary/">Python Program to Map Two Lists into a Dictionary</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-create-dictionary/">Python Program to Create a Dictionary with Key as First Character and Value as Words Starting with that Character</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-generate-dictionary-contains-number/">Python Program to Create Dictionary that Contains Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-frequency-word-string/">Python Program to Count the Frequency of Each Word in a String using Dictionary</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-tuples"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Tuples</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-create-list-tuples/">Python Program to Create a List of Tuples with the First Element as the Number and Second Element as the Square of the Number</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-tuples-outside-range/">Python Program to Remove All Tuples in a List Outside the Given Range</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sort-list-tuples-increasing-order-last-element-tuple/">Python Program to Sort a List of Tuples in Increasing Order by the Last Element in Each Tuple</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-classes-objects"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Classes &amp; Objects</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-class-performs-basic-calculator-operations/">Python Program to Create a Class which Performs Basic Calculator Operations</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-append-delete-display-list-classes/">Python Program to Append, Delete and Display Elements of a List using Classes</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-area-rectangle-classes/">Python Program to Find the Area of a Rectangle using Classes</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-class-compute-area-perimeter-circle/">Python Program to Find the Area and Perimeter of the Circle using Class</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-class-method-accepts-string-prints/">Python Program to Create a Class in which One Method Accepts a String from the User and Another Prints it</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-class-compute-possible-subsets/">Python Program to Create a Class and Get All Possible Distinct Subsets from a Set</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-file-handling"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on File Handling</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-read-contents-file/">Python Program to Read the Contents of the File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-copy-contents-file-another/">Python Program to Copy One File to Another File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-lines-text-file/">Python Program to Count the Number of Lines in Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-blanks-text-file/">Python Program to Count the Number of Blank Spaces in a Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-occurrences-word-text-file/">Python Program to Count the Occurrences of a Word in a Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-number-words-characters-file/">Python Program to Count the Number of Words in a Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-file-capitalise-letter-word/">Python Program to Capitalize First Letter of Each Word in a File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-file-counts-number/">Python Program to Counts the Number of Times a Letter Appears in the Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-file-print-numbers/">Python Program to Extract Numbers from Text File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-file-reverse-order/">Python Program to Print the Contents of File in Reverse Order</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-append-contents-file-another/">Python Program to Append the Content of One File to the End of Another File</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-string-append-file/">Python Program to Read a String from the User and Append it into a File</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-list"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programming Examples on List</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-find-largest-number-list/">Python Program to Find Largest Number in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-second-largest-number-list/">Python Program to Find Second Largest Number in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-largest-even-largest-odd-number-list/">Python Program to Print Largest Even and Largest Odd Number in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-even-odd-elements-different-lists/">Python Program to Split Even and Odd Elements into Two Lists</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-calculate-average-numbers-given-list/">Python Program to Find Average of a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-sum-negative-positive-even-odd/">Python Program to Print Sum of Negative Numbers, Positive Even &amp; Odd Numbers in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-search-times-number-occurs-list/">Python Program to Count Occurrences of Element in List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sum-elements-list-recursively/">Python Program to Find the Sum of Elements in a List using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-length-list-recursion/">Python Program to Find the Length of a List using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-merge-two-lists-sort/">Python Program to Merge Two Lists and Sort it</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-duplicate-items-list/">Python Program to Remove Duplicates from a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-swap-first-last-element/">Python Program to Swap the First and Last Element in a List </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sort-list-according-second-element-sublist/">Python Program to Sort a List According to the Second Element in Sublist</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-read-list-words-returns-longest/">Python Program to Return the Length of the Longest Word from the List of Words</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-element-occurring-odd-number-times-list/">Python Program to Find the Number Occurring Odd Number of Times in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-generate-random-numbers-append-list/">Python Program to Generate Random Numbers from 1 to 20 and Append Them to the List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-occurrence-given-word-list/">Python Program to Remove the ith Occurrence of the Given Word in a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-cumulative-sum-list/">Python Program to Find the Cumulative Sum of a List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-union-two-lists/">Python Program to Find the Union of Two Lists</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-intersection-two-lists/">Python Program to Find the Intersection of Two Lists</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-flatten-list-without-recursion/">Python Program to Flatten a List without using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-sum-nested-list-recursion/">Python Program to Find the Total Sum of a Nested List Using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-flatten-nested-list-using-recursion/">Python Program to Flatten a Nested List using Recursion</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-linked-list"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Linked List</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-create-linked-list-display-elements-list/">Python Program to Create and Display Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-remove-duplicates-linked-list/">Python Program to Remove Duplicates from a Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-whether-2-linked-lists-same/">Python Program to Check if Two Linked Lists are Equal</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-josephus-problem-using-linked-list/">Python Program to Solve Josephus Problem using Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-nth-node-last-linked-list/">Python Program to Find Nth Node from End of Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-interchange-two-elements-list-without-touching-key-field/">Python Program to Swap Two Elements of the List without Key Field</a></li>
+</ul>
+<p><a class="sf-more" href="https://www.sanfoundry.com/python-programming-examples-linked-lists/">More Python Programming Examples on Linked List</a>
+</p></div>
+<div bis_skin_checked="1">
+<a id="python-programs-singly-linked-list"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Singly Linked List</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-illustrate-operations-singly-linked-list/">Python Program to Perform Singly Linked List Operations</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-demonstrate-circular-single-linked-list/">Python Program to Demonstrate Circular Single Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-whether-singly-linked-list-palindrome/">Python Program to Check if Singly Linked List is Palindrome</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-convert-given-singly-linked-list-circular-list/">Python Program to Convert Singly Linked List to Circular List</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-doubly-linked-list"></a><p></p>
+<div id="sf-ads-mi4-336-280" class="sf-mobile-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center;" bis_skin_checked="1">advertisement</div>
+<div id="90f55663-effd-4105-b1e7-29d86b526544" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("90f55663-effd-4105-b1e7-29d86b526544");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("90f55663-effd-4105-b1e7-29d86b526544");
+      }
+    });
+</script>
+</div>
+</div>
+	
+<h2 class="programs-tlp-h2">Python Programs on Doubly Linked List</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-circular-doubly-linked-list/">Python Program to Implement Circular Doubly Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-largest-element-doubly-linked-list/">Python Program to Find the Largest Element in a Doubly Linked List</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-doubly-linked-list-provide-insertion-deletion-display-operations/">Python Program to Implement Doubly Linked List Operations</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-stack"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Stack</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-stack/">Python Program to Implement Stack</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-stack-using-one-queue/">Python Program to Implement Stack using Queue</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-stack-using-two-queues/">Python Program to Implement Stack using Two Queues</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-reverse-stack-using-recursion/">Python Program to Reverse a Stack using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-string-palindrome-using-stack/">Python Program to Check String is Palindrome using Stack</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-expression-correctly-parenthesized/">Python Program to Check Expression is Correctly Parenthesized</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-queue"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programming Examples on Queue</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-queue/">Python Program to Implement Queue</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-dequeue/">Python Program to Implement Dequeue</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-queues-using-stacks/">Python Program to Implement Queues using Stack</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-tree"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Tree</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-binomial-tree/">Python Program to Implement Binomial Tree</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-construct-tree-perform-insertion-deletion-display/">Python Program to Construct a Tree and Perform Tree Operations</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-number-nodes-binary-tree/">Python Program to Count the Number of Nodes in Binary Tree</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-display-nodes-tree-using-bfs-traversal/">Python Program to Display Tree Nodes using BFS Traversal</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-nth-node-inorder-traversal-tree/">Python Program to Find Nth Node of Inorder Traversal</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-depth-first-binary-tree-search-using-recursion/">Python Program for Depth First Binary Tree Search using Recursion</a></li>
+</ul>
+<p><a class="sf-more" href="https://www.sanfoundry.com/python-programming-examples-trees/">More Python Programming Examples on Trees</a>
+</p></div>
+<div bis_skin_checked="1">
+<a id="python-programs-heap"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programming Examples on Heap</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-binary-heap/">Python Program to Implement Binary Heap</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-binomial-heap/">Python Program to Implement Binomial Heap</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-fibonacci-heap/">Python Program to Implement Fibonacci Heap</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-d-ary-heap/">Python Program to Implement D-ary Heap</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-ternary-heap/">Python Program to Implement Ternary Heap</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-graph"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Graph</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-graph/">Python Program to Implement Graph</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-all-connected-components-using-bfs-undirected-graph/">Python Program to Check the Connectivity of Undirected Graph Using BFS</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-minimum-spanning-tree-using-krusals-algorithm/">Python Program to Find Minimum Spanning Tree using Kruskal’s Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-minimum-spanning-tree-using-prims-algorithm/">Python Program to Find Minimum Spanning Tree using Prim’s Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-dijkstras-shortest-path-algorithm/">Python Program to Implement Dijkstra’s Shortest Path Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-bellman-ford-algorithm/">Python Program to Implement Bellman Ford Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-floyd-warshall-algorithm/">Python Program to Implement Floyd Warshall Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-johnsons-algorithm/">Python Program to Implement Johnson’s Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-undirected-graph-bipartite-using-bfs/">Python Program to Check if Undirected Graph is Bipartite using BFS</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-undirected-graph-bipartite-using-dfs/">Python Program to Check if Undirected Graph is Bipartite using DFS</a></li>
+</ul></div>
+<p><a class="sf-more" href="https://www.sanfoundry.com/python-programming-examples-graphs/">More Python Programming Examples on Graph</a></p>
+<div bis_skin_checked="1">
+<p><a id="python-programs-searching"></a></p>
+<h2 class="programs-tlp-h2">Python Programs on Searching</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-linear-search/">Python Program to Implement Linear Search</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-binary-search-recursion/">Python Program to Perform Binary Search using Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-select-ith-smallest-element-list-expected-linear-time/">Python Program to Find ith Smallest Element from List in Linear Time</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-select-ith-largest-element-list-expected-linear-time/">Python Program to Find ith Largest Element from List in Linear Time</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-maximum-subarray-problem-using-divide-conquer/">Python Program to Solve Maximum Subarray Problem using Divide and Conquer</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-maximum-subarray-problem-using-kadanes-algorithm/">Python Program to Solve Maximum Subarray Problem using Kadane’s Algorithm</a></li>
+</ul>
+<p><a class="sf-more" href="https://www.sanfoundry.com/python-programming-examples-searching-sorting/">More Python Programming Examples on Searching</a>
+</p></div>
+<div bis_skin_checked="1">
+<a id="python-programs-sorting"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Sorting</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-insertion-sort/">Python Program to Implement Insertion Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-selection-sort/">Python Program to Implement Selection Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-bubble-sort/">Python Program to Implement Bubble Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-merge-sort/">Python Program to Implement Merge Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-quicksort/">Python Program to Implement Quick sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-comb-sort/">Python Program to Implement Comb Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-implement-radix-sort/">Python Program to Implement Radix Sort</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-sort-list-length-elements/">Python Program to Sort a List According to the Length of the Elements</a></li>
+</ul>
+<p><a class="sf-more" href="https://www.sanfoundry.com/python-programming-examples-searching-sorting/">More Python Programming Examples on Sorting</a>
+</p></div>
+<div bis_skin_checked="1">
+<a id="python-programs-gaming"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Gaming</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-implement-tower-hanoi/">Python Program to Demonstrate Tower Of Hanoi</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-celebrity-problem/">Python Program to Solve the Celebrity Problem</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-n-queen-problem-recursion/">Python Program to Solve n-Queen Problem with Recursion</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-n-queen-problem-without-recursion/">Python Program to Solve n-Queen Problem without Recursion</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-greedy-algorithms"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Greedy Algorithms</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-solve-fractional-knapsack-problem-using-greedy-algorithm/">Python Program to Solve Fractional Knapsack Problem using Greedy Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-interval-scheduling-problem-using-greedy-algorithm/">Python Program to Solve Interval Scheduling Problem using Greedy Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-smallest-set-unit-length-closed-intervals-contains-all-points-using-greedy-algorithm/">Python Program to Find the Smallest Set of Unit-Length Closed Intervals using Greedy Algorithm</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-minimize-maximum-lateness-using-greedy-algorithm/">Python Program to Minimize Lateness using Greedy Algorithm</a></li>
+</ul>
+</div>
+<div bis_skin_checked="1">
+<a id="python-programs-dynamic-programming"></a><p></p>
+<h2 class="programs-tlp-h2">Python Programs on Dynamic Programming</h2>
+<ul>
+<li><a href="https://www.sanfoundry.com/python-program-print-nth-fibonacci-number-using-dynamic-programming-memoization/">Python Program to Print nth Fibonacci Number using Dynamic Programming with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-print-nth-fibonacci-number-using-dynamic-programming-bottom-up-approach/">Python Program to Print nth Fibonacci Number using DP with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-rod-cutting-problem-using-dynamic-programming-memoization/">Python Program to Solve Rod Cutting Problem using Dynamic Programming with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-rod-cutting-problem-using-dynamic-programming-bottom-up-approach/">Python Program to Solve Rod Cutting Problem using DP with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-0-1-knapsack-problem-using-dynamic-programming-memoization/">Python Program to Solve 0-1 Knapsack Problem using DP with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-0-1-knapsack-problem-using-dynamic-programming-bottom-up-approach/">Python Program to Solve 0-1 Knapsack Problem using DP with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-matrix-chain-multiplication-using-dynamic-programming-memoization/">Python Program to Solve Matrix-Chain Multiplication using DP with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-solve-matrix-chain-multiplication-using-dynamic-programming-bottom-up-approach/">Python Program to Solve Matrix-Chain Multiplication using DP with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-longest-common-subsequence-using-dynamic-programming-memoization/">Python Program to Find Longest Common Subsequence using Dynamic Programming with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-longest-common-subsequence-using-dynamic-programming-bottom-up-approach/">Python Program to Find Longest Common Subsequence using Dynamic Programming with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-longest-common-substring-using-dynamic-programming-memoization/">Python Program to Find Longest Common Substring using Dynamic Programming with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-longest-common-substring-using-dynamic-programming-bottom-up-approach/">Python Program to Find Longest Common Substring using Dynamic Programming with Bottom-Up Approach</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-all-paths-grid-holes-using-dynamic-programming-memoization/">Python Program to Count all Paths in a Grid with Holes using Dynamic Programming with Memoization</a></li>
+<li><a href="https://www.sanfoundry.com/python-program-count-all-paths-grid-holes-using-dynamic-programming-bottom-up-approach/">Python Program to Count all Paths in a Grid with Holes using Dynamic Programming with Bottom-Up Approach</a></li>
+</ul>
+</div>
+<p></p>		</div><!-- .entry-content -->
+
+		
+
+<div id="sf-ads-mbtf1-336-280" class="sf-mobile-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center;" bis_skin_checked="1">advertisement</div>
+<div id="658ed863-6c61-464d-9aa2-c727da2a861a" class="_ap_apex_ad" bis_skin_checked="1">
+  <script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("658ed863-6c61-464d-9aa2-c727da2a861a");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("658ed863-6c61-464d-9aa2-c727da2a861a");
+      }
+    });
+  </script>
+</div>
+</div>
+
+    <div class="mobile-content sf-post-content-category" bis_skin_checked="1"><strong>Additional Resources:</strong><br><ul><li><a href="https://www.sanfoundry.com/python-programming-examples-searching-sorting/">Searching and Sorting in Python</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-trees/">Python Programs on Trees</a></li><li><a href="https://www.sanfoundry.com/c-programming-examples/">C Programming Examples</a></li><li><a href="https://www.sanfoundry.com/c-programming-examples-on-trees/">C Programming Examples on Trees</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-graphs/">Python Programs on Graphs</a></li></ul></div><div class="mobile-content sf-post-content-category" bis_skin_checked="1"><strong>Popular Pages:</strong><br><ul><li><a href="https://www.sanfoundry.com/java-programming-examples/">Java Programming Examples</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-linked-lists/">Linked List Programs in Python</a></li><li><a href="https://www.sanfoundry.com/dynamic-programming-problems-solutions/">Dynamic Programming Examples</a></li><li><a href="https://www.sanfoundry.com/100-plc-programming-examples/">PLC Programming Examples</a></li><li><a href="https://www.sanfoundry.com/c-programming-examples-data-structures/">Data Structures in C</a></li></ul></div>	</div><!-- .inside-article -->
+</article><!-- #post-## -->
+
+<div class="sf-post-bio" bis_skin_checked="1">
+<div style="float: left; padding-right: 10px;" bis_skin_checked="1">
+<noscript><img src="https://www.sanfoundry.com/wp-content/uploads/2017/01/Manish2.png" alt="Manish Bhojasia - Founder & CTO at Sanfoundry"          class="aligncenter" width="150px" height="150px"></noscript><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20150%20150%22%3E%3C/svg%3E" data-src="https://www.sanfoundry.com/wp-content/uploads/2017/01/Manish2.png" alt="Manish Bhojasia - Founder &amp; CTO at Sanfoundry" class="lazyload aligncenter" width="150px" height="150px">
+</div>
+<a href="https://www.sanfoundry.com/founder/">Manish Bhojasia</a>, a technology veteran with 20+ years @ Cisco &amp; Wipro, is Founder and    CTO at <strong>Sanfoundry</strong>. He lives in Bangalore, and focuses on development of Linux Kernel, SAN Technologies, Advanced C,      Data Structures &amp; Alogrithms.
+Stay connected with him at <a href="https://www.linkedin.com/in/manishbhojasia" rel="nofollow noopener" target="_blank">LinkedIn</a>.
+<br>
+<br>
+Subscribe to his free Masterclasses at <a href="https://www.youtube.com/c/SanfoundryOfficial/?sub_confirmation=1" rel="nofollow noopener" target="_blank">Youtube</a> &amp; discussions at <a href="https://t.me/sanfoundryclasses" rel="nofollow noopener" target="_blank">Telegram    SanfoundryClasses</a>.
+<div style="clear: left;" bis_skin_checked="1"></div>
+</div>
+    		</main>
+
+
+sau đó vào từng link để thu thập từng bài chép file, vào thư muc là tên chương 1 thư mục có nhiều bài chứa các bài của chương đó, html của từng bài có format:
+<main id="main" class="site-main">
+			
+<article id="post-131084" class="post-131084 post type-post status-publish format-standard has-post-thumbnail hentry category-python-programs category-python-programs-simple" itemtype="https://schema.org/CreativeWork" itemscope="">
+	<div class="inside-article" bis_skin_checked="1">
+		
+		<header class="entry-header">
+			<h1 class="entry-title" itemprop="headline">Python Program to Check if a Number is Odd or Even</h1>			<div class="entry-meta" bis_skin_checked="1">
+							</div><!-- .entry-meta -->
+				</header><!-- .entry-header -->
+
+		
+		<div class="entry-content" itemprop="text" bis_skin_checked="1">
+			<div class="sf-codeh" bis_skin_checked="1">Problem Description</div>
+<p>Write a Python Program to check whether a given number is even or odd.</p>
+<p><strong>What is an Even Number?</strong><br>
+An even number is an integer that is divisible by 2 without leaving a remainder, such as 2, 4, 6, 8, 10, and so on.</p>
+<p><strong>What is an Odd Number?</strong><br>
+An odd number is an integer that cannot be divided evenly by 2, leaving a remainder of 1. Examples include 1, 3, 5, 7, 9, and so on.</p>
+<div class="sf-mobile-ads" style="padding-bottom: 20px;" bis_skin_checked="1">
+<div id="9f8aa9b5-2c42-4296-896e-70772ed1db59" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function() {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("9f8aa9b5-2c42-4296-896e-70772ed1db59");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("9f8aa9b5-2c42-4296-896e-70772ed1db59");
+      }
+    });
+</script>
+</div>
+</div>
+        
+<div class="sf-codeh" bis_skin_checked="1">Problem Solution</div>
+<p>There are several ways to check whether a given number is even or odd in Python. Let’s take a detailed look at all the approaches to check whether a given number is even or odd.</p>
+<ul>
+<li><a href="#method-1">Check Even or Odd in Python using if-else and Modulus Operator</a></li>
+<li><a href="#method-2">Check Even or Odd in Python using Bitwise Operator</a></li>
+<li><a href="#method-3">Check Even or Odd in Python using Recursion</a></li>
+<li><a href="#method-4">Check Even or Odd in Python using Lambda Function</a></li>
+</ul>
+<p><a id="method-1"></a></p>
+<div class="sf-codeh" bis_skin_checked="1">Method 1: (Using if-else and Modulus Operator)</div>
+<p>In this approach, we check whether a number is even or odd using if-else statement and modulus operator.</p>
+<div class="sf-codeh" bis_skin_checked="1">Program/Source Code</div>
+<p>Here is source code of the Python Program to determine whether a given number is even or odd using modulus operator. The program output is also shown below.</p>
+<div class="sf-desktop-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center; margin-top:20px;" bis_skin_checked="1">advertisement</div>
+<div id="sf-ads-drbtf1" bis_skin_checked="1">
+<div id="00000001-88dfedcc-7f18-4e9c-9541-d583ed44fa63" class="_ap_apex_ad" style="max-height: 300px; text-align: center; margin: 0px auto; display: block;" data-section="00000001-88dfedcc-7f18-4e9c-9541-d583ed44fa63" data-orig-id="7cee830d-5f11-4a2b-b356-93cc453475a0" data-render-time="1749864097508" data-ap-network="adpTags" bis_skin_checked="1" data-refresh-time="1749864172317" data-timeout="976">
+<script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if ( adpushup.config.platform === "DESKTOP" || adpushup.config.platform === "TABLET" ) {
+        adpushup.triggerAd("7cee830d-5f11-4a2b-b356-93cc453475a0");
+      }
+    });
+</script>
+<div id="ADP_41319_responsivexresponsive_00000001-88dfedcc-7f18-4e9c-9541-d583ed44fa63" style="text-align: center; margin: 0 auto;" bis_skin_checked="1" data-google-query-id="CKGp26vf740DFWWIrAIdBccTpA">
+
+<div id="google_ads_iframe_/103512698,22469541741/22048010844_0__container__" style="border: 0pt none;" bis_skin_checked="1"><iframe id="google_ads_iframe_/103512698,22469541741/22048010844_0" name="google_ads_iframe_/103512698,22469541741/22048010844_0" title="3rd party ad content" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" aria-label="Advertisement" tabindex="0" allow="private-state-token-redemption;attribution-reporting" data-google-container-id="1" style="border: 0px; vertical-align: bottom;" bis_precise_ad="1" bis_size="{&quot;x&quot;:266,&quot;y&quot;:1044,&quot;w&quot;:300,&quot;h&quot;:250,&quot;abs_x&quot;:266,&quot;abs_y&quot;:1044}" bis_id="fr_76wmhlzxkfmtpzsjfn9qtq" bis_depth="0" bis_chainid="17" data-load-complete="true"></iframe></div></div></div>
+</div>
+</div>
+	
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="python" bis_skin_checked="1"><pre class="de1">n <span class="sy0">=</span> <span class="kw2">int</span><span class="br0">(</span><span class="kw2">input</span><span class="br0">(</span><span class="st0">"Enter a number: "</span><span class="br0">)</span><span class="br0">)</span>
+&nbsp;
+<span class="kw1">if</span> n % <span class="nu0">2</span> <span class="sy0">==</span> <span class="nu0">0</span>:
+    <span class="kw1">print</span><span class="br0">(</span>n<span class="sy0">,</span> <span class="st0">"is an even number."</span><span class="br0">)</span>
+<span class="kw1">else</span>:
+    <span class="kw1">print</span><span class="br0">(</span>n<span class="sy0">,</span> <span class="st0">"is an odd number."</span><span class="br0">)</span></pre></div></div></div></div></div></div></div>
+
+
+<div class="sf-codeh" bis_skin_checked="1">Program Explanation</div>
+<p>1. Prompt the user to enter a number.<br>
+2. Read the input number and store it in a variable <strong>n</strong>.<br>
+3. The program then uses the modulo operator % to check if the number divided by 2 leaves a remainder of 0.<br>
+4. If the remainder is 0, it means the number is divisible by 2 and hence even.<br>
+5. Otherwise, if the remainder is not 0, it is an odd number.</p>
+<p><strong>Time Complexity: O(1)</strong><br>
+The time complexity of the program being O(1) indicates that the execution time remains constant, regardless of the input size.</p>
+<p><strong>Space Complexity: O(1)</strong><br>
+The space complexity of the program being O(1) signifies that the code utilizes a fixed amount of memory to store the input number and other variables, irrespective of the input number’s magnitude.</p> 
+<div style="margin:30px 0px;" bis_skin_checked="1">
+<div style="display:inline-block; padding:10px; font-weight:600; border: 1px solid #a9a9a9; background-color: #fdffcc" bis_skin_checked="1">
+    Free 30-Day Java Certification Bootcamp is Live. <a href="https://www.sanfoundry.com/java-certification-bootcamp/" target="_blank">Join Now!</a><br>
+</div>
+</div>
+    
+<div class="sf-mobile-ads" style="padding-bottom: 20px;" bis_skin_checked="1">
+<div id="32b92b8e-d18b-4e87-9c9d-63369f919456" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function() {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("32b92b8e-d18b-4e87-9c9d-63369f919456");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("32b92b8e-d18b-4e87-9c9d-63369f919456");
+      }
+    });
+</script>
+</div>
+</div>
+        
+<div class="sf-codeh" bis_skin_checked="1">Runtime Test Cases</div>
+<p><strong>Test case 1:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 10.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 10
+10 is an even number.</pre></div></div></div></div></div></div></div>
+
+
+<p><strong>Test case 2:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 5.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 5
+5 is an odd number.</pre></div></div></div></div></div></div></div>
+
+
+<p><a id="method-2"></a></p>
+<div class="sf-codeh" bis_skin_checked="1">Method 2: (Using Bitwise Operator)</div>
+<p>In this approach, we check whether a number is even or odd using bitwise operator.</p>
+<div class="sf-codeh" bis_skin_checked="1">Program/Source Code</div>
+<p>Here is source code of the Python Program to determine whether a given number is even or odd using bitwise operator. The program output is also shown below.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="python" bis_skin_checked="1"><pre class="de1">n <span class="sy0">=</span> <span class="kw2">int</span><span class="br0">(</span><span class="kw2">input</span><span class="br0">(</span><span class="st0">"Enter a number: "</span><span class="br0">)</span><span class="br0">)</span>
+&nbsp;
+<span class="kw1">if</span> n &amp; <span class="nu0">1</span>:
+    <span class="kw1">print</span><span class="br0">(</span>n<span class="sy0">,</span> <span class="st0">"is an odd number."</span><span class="br0">)</span>
+<span class="kw1">else</span>:
+    <span class="kw1">print</span><span class="br0">(</span>n<span class="sy0">,</span> <span class="st0">"is an even number."</span><span class="br0">)</span></pre></div></div></div></div></div></div></div>
+
+
+<div class="sf-codeh" bis_skin_checked="1">Program Explanation</div>
+<p>1. In this program, the user is prompted to enter a number.<br>
+2. The program then uses the bitwise AND operator <strong>(&amp;)</strong> with 1 to check the least significant bit of the binary representation of the number.<br>
+3. If the result is non-zero, it means the number is odd.<br>
+4. Otherwise, if the result is zero, it is an even number.</p>
+<p><strong>Time Complexity: O(1)</strong><br>
+The time complexity of the code is O(1) since it has a constant number of operations.</p>
+<div id="sf-ads-mi4-336-280" class="sf-mobile-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center;" bis_skin_checked="1">advertisement</div>
+<div id="90f55663-effd-4105-b1e7-29d86b526544" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("90f55663-effd-4105-b1e7-29d86b526544");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("90f55663-effd-4105-b1e7-29d86b526544");
+      }
+    });
+</script>
+</div>
+</div>
+	
+<p><strong>Space Complexity: O(1)</strong><br>
+The space complexity is also O(1) as it uses a fixed amount of memory regardless of the input size.</p>
+<div class="sf-codeh" bis_skin_checked="1">Runtime Test Cases</div>
+<p><strong>Test case 1:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 6.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 6
+6 is an even number.</pre></div></div></div></div></div></div></div>
+
+
+<p><strong>Test case 2:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 9.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 9
+9 is an odd number.</pre></div></div></div></div></div></div></div>
+
+
+<p><a id="method-3"></a></p>
+<div class="sf-codeh" bis_skin_checked="1">Method 3: (Using Recursion)</div>
+<p>In this approach, we check whether a number is even or odd using recursion.</p>
+<div class="sf-codeh" bis_skin_checked="1">Program/Source Code</div>
+<p>Here is source code of the Python Program to determine whether a given number is even or odd recursively. The program output is also shown below.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="python" bis_skin_checked="1"><pre class="de1"><span class="kw1">def</span> check<span class="br0">(</span>n<span class="br0">)</span>:
+    <span class="kw1">if</span> <span class="br0">(</span>n <span class="sy0">&lt;</span> <span class="nu0">2</span><span class="br0">)</span>:
+        <span class="kw1">return</span> <span class="br0">(</span>n % <span class="nu0">2</span> <span class="sy0">==</span> <span class="nu0">0</span><span class="br0">)</span>
+    <span class="kw1">return</span> <span class="br0">(</span>check<span class="br0">(</span>n - <span class="nu0">2</span><span class="br0">)</span><span class="br0">)</span>
+n<span class="sy0">=</span><span class="kw2">int</span><span class="br0">(</span><span class="kw2">input</span><span class="br0">(</span><span class="st0">"Enter number:"</span><span class="br0">)</span><span class="br0">)</span>
+<span class="kw1">if</span><span class="br0">(</span>check<span class="br0">(</span>n<span class="br0">)</span><span class="sy0">==</span><span class="kw2">True</span><span class="br0">)</span>:
+      <span class="kw1">print</span><span class="br0">(</span><span class="st0">"Number is even!"</span><span class="br0">)</span>
+<span class="kw1">else</span>:
+      <span class="kw1">print</span><span class="br0">(</span><span class="st0">"Number is odd!"</span><span class="br0">)</span></pre></div></div></div></div></div></div></div>
+
+
+<div class="sf-codeh" bis_skin_checked="1">Program Explanation</div>
+<p>1. User must enter a number and store it in a variable.<br>
+2. The number is passed as an argument to a recursive function.<br>
+3. The base condition is that the number has to be lesser than 2.<br>
+4. Otherwise the function is called recursively with the number minus 2.<br>
+5. The result is returned and an if statement is used to check if the number is odd or even.<br>
+6. The final result is printed.</p>
+<p><strong>Time Complexity: O(n/2)</strong><br>
+The time complexity of the code is O(n/2) since the function recursively calls itself n/2 times in the worst case.</p>
+<p><strong>Space Complexity: O(n)</strong><br>
+The space complexity is O(n) due to the recursive function calls that create a stack frame for each call.</p>
+<div class="sf-codeh" bis_skin_checked="1">Runtime Test Cases</div>
+<p><strong>Test case 1:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 124.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter number:124
+Number is even!</pre></div></div></div></div></div></div></div>
+
+
+<p><strong>Test case 2:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 567.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter number:567
+Number is odd!</pre></div></div></div></div></div></div></div>
+
+
+<p><a id="method-4"></a></p>
+<div class="sf-codeh" bis_skin_checked="1">Method 4: (Using Lambda Function)</div>
+<p>In this approach, we check whether a number is even or odd using lambda function</p>
+<div class="sf-codeh" bis_skin_checked="1">Program/Source Code</div>
+<p>Here is source code of the Python Program to determine whether a given number is even or odd using lambda function. The program output is also shown below.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="python" bis_skin_checked="1"><pre class="de1">check_number <span class="sy0">=</span> <span class="kw1">lambda</span> num: <span class="st0">"even"</span> <span class="kw1">if</span> num % <span class="nu0">2</span> <span class="sy0">==</span> <span class="nu0">0</span> <span class="kw1">else</span> <span class="st0">"odd"</span>
+&nbsp;
+number <span class="sy0">=</span> <span class="kw2">int</span><span class="br0">(</span><span class="kw2">input</span><span class="br0">(</span><span class="st0">"Enter a number: "</span><span class="br0">)</span><span class="br0">)</span>
+result <span class="sy0">=</span> check_number<span class="br0">(</span>number<span class="br0">)</span>
+&nbsp;
+<span class="kw1">print</span><span class="br0">(</span>number<span class="sy0">,</span> <span class="st0">"is an"</span><span class="sy0">,</span> result<span class="sy0">,</span> <span class="st0">"number."</span><span class="br0">)</span></pre></div></div></div></div></div></div></div>
+
+
+<div class="sf-codeh" bis_skin_checked="1">Program Explanation</div>
+<p>1. Define a lambda function named <strong>check_number</strong> that takes a parameter <strong>num</strong>.<br>
+2. The lambda function checks if num is divisible by 2 by using the modulo operator <strong>%</strong>.<br>
+3. If the remainder is 0, it returns the string “even”; otherwise, it returns the string “odd”.<br>
+4. Prompt the user to enter a number and store it in the variable number using <strong>int(input(“Enter a number: “))</strong>.<br>
+5. Call the lambda function <strong>check_number</strong> with number as the argument, and store the result in the variable <strong>result</strong>.<br>
+6. Print the number along with the result using the <strong>print</strong> function, indicating whether it is an odd or even number.<br>
+7. Example output: “<strong>12 is an even number.</strong>” or “<strong>17 is an odd number.</strong>”</p>
+<p><strong>Time Complexity: O(1)</strong><br>
+The time complexity of the code is O(1) since the lambda function executes in constant time.</p>
+<p><strong>Space Complexity: O(1)</strong><br>
+The space complexity is also O(1) as it uses a fixed amount of memory regardless of the input size.</p>
+<div class="sf-codeh" bis_skin_checked="1">Runtime Test Cases</div>
+<p><strong>Test case 1:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 100.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 100
+100 is an even number.</pre></div></div></div></div></div></div></div>
+
+
+<p><strong>Test case 2:</strong> Here is the runtime output of the program to check whether a number is even or odd when the user enters number = 55.</p>
+
+
+<div class="hk1_style-wrap5" bis_skin_checked="1"><div class="hk1_style-wrap4" bis_skin_checked="1"><div class="hk1_style-wrap3" bis_skin_checked="1"><div class="hk1_style-wrap2" bis_skin_checked="1"><div class="hk1_style-wrap" bis_skin_checked="1"><div class="hk1_style" bis_skin_checked="1"><div class="text" bis_skin_checked="1"><pre class="de1">Enter a number: 55
+55 is an odd number.</pre></div></div></div></div></div></div></div>
+
+
+<p>To practice programs on every topic in Python, please visit <a href="https://www.sanfoundry.com/python-problems-solutions/">“Programming Examples in Python”</a>.</p>
+<p></p><p></p><div style="margin-bottom:20px" bis_skin_checked="1"><div class="sf-nav-prev-bottom" bis_skin_checked="1">« <a href="https://www.sanfoundry.com/python-program-form-dictionary-object-class/" rel="prev">Prev - Python Program to Create Dictionary from an Object</a></div><div class="sf-nav-next-bottom" bis_skin_checked="1">» <a href="https://www.sanfoundry.com/python-program-find-binary-equivalent-number-recursively/" rel="next">Next - Python Program to Print Binary Equivalent of an Integer using Recursion</a></div><div style="clear:both;" bis_skin_checked="1"></div></div> <div class="sf-post-content-category" bis_skin_checked="1"><strong>Related Posts:</strong><br><br><ul><li>Check <a href="https://www.sanfoundry.com/best-reference-books-programming-hot-technologies/">Information Technology Books</a></li>
+<li>Apply for <a href="https://www.sanfoundry.com/internships-computer-science-engineering/">Programming Internship</a></li>
+  <li>Practice <a href="https://www.sanfoundry.com/programming-questions-answers/">Programming MCQs</a></li>
+<li>Apply for <a href="https://www.sanfoundry.com/python-programming-internship/">Python Internship</a></li>
+<li>Check <a href="https://www.sanfoundry.com/best-reference-books-python-programming/">Python Books</a></li>
+</ul></div>		</div><!-- .entry-content -->
+
+					<footer class="entry-meta">
+							</footer><!-- .entry-meta -->
+		
+
+<div id="sf-ads-mbtf1-336-280" class="sf-mobile-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center;" bis_skin_checked="1">advertisement</div>
+<div id="658ed863-6c61-464d-9aa2-c727da2a861a" class="_ap_apex_ad" bis_skin_checked="1">
+  <script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("658ed863-6c61-464d-9aa2-c727da2a861a");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("658ed863-6c61-464d-9aa2-c727da2a861a");
+      }
+    });
+  </script>
+</div>
+</div>
+
+     
+	<div class="sf-post-yarpp" bis_skin_checked="1">
+	<div class="yarpp yarpp-related yarpp-related-website yarpp-template-list" bis_skin_checked="1">
+<!-- YARPP List -->
+<h3>Recommended Articles:</h3><ol>
+<li><a href="https://www.sanfoundry.com/cpp-program-check-given-integer-even-or-odd/" rel="bookmark" title="C++ Program to Check Whether a Given Number is Even or Odd">C++ Program to Check Whether a Given Number is Even or Odd </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-expression-correctly-parenthesized/" rel="bookmark" title="Python Program to Check Expression is Correctly Parenthesized">Python Program to Check Expression is Correctly Parenthesized </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-string-palindrome-using-stack/" rel="bookmark" title="Python Program to Check String is Palindrome using Stack">Python Program to Check String is Palindrome using Stack </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-perfect-number/" rel="bookmark" title="Python Program to Check Whether a Given Number is Perfect Number">Python Program to Check Whether a Given Number is Perfect Number </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-whether-number-positive-negative/" rel="bookmark" title="Python Program to Check Whether a Number is Positive or Negative">Python Program to Check Whether a Number is Positive or Negative </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-check-armstrong-number/" rel="bookmark" title="Python Program to Check Armstrong Number">Python Program to Check Armstrong Number </a></li>
+<li><a href="https://www.sanfoundry.com/java-program-check-given-integer-odd-even/" rel="bookmark" title="Java Program to Check Whether a Given Number is Even or Odd">Java Program to Check Whether a Given Number is Even or Odd </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-generate-divisors-integer/" rel="bookmark" title="Python Program to Find All the Divisors of an Integer">Python Program to Find All the Divisors of an Integer </a></li>
+<li><a href="https://www.sanfoundry.com/c-program-reverse-number-palindrome/" rel="bookmark" title="C Program to Reverse a Number and Check if it is a Palindrome">C Program to Reverse a Number and Check if it is a Palindrome </a></li>
+<li><a href="https://www.sanfoundry.com/python-program-find-smallest-divisor-integer/" rel="bookmark" title="Python Program to Find the Smallest Divisor of an Integer">Python Program to Find the Smallest Divisor of an Integer </a></li>
+</ol>
+</div>
+	</div>
+	
+<div id="sf-ads-mbtf2-336-280" class="sf-mobile-ads" bis_skin_checked="1">
+<div style="font-size:13px; text-align: center;" bis_skin_checked="1">advertisement</div>
+<div id="eab65a1c-02cc-479a-a712-c5f542208b0a" class="_ap_apex_ad" bis_skin_checked="1">
+<script>
+    var adpushup = window.adpushup || {};
+    adpushup.que = adpushup.que || [];
+    adpushup.que.push(function () {
+      if (adpushup.config.platform === "MOBILE") {
+        adpushup.triggerAd("eab65a1c-02cc-479a-a712-c5f542208b0a");
+      } else if ((window.outerWidth <= 768) || (window.outerWidth == 0)) {
+        adpushup.triggerAd("eab65a1c-02cc-479a-a712-c5f542208b0a");
+      }
+    });
+</script>
+</div>
+</div>
+
+        <div class="mobile-content sf-post-content-category" bis_skin_checked="1"><strong>Additional Resources:</strong><br><ul><li><a href="https://www.sanfoundry.com/python-problems-solutions/">Python Programming Examples</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-trees/">Python Programs on Trees</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-linked-lists/">Linked List Programs in Python</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-graphs/">Python Programs on Graphs</a></li><li><a href="https://www.sanfoundry.com/python-programming-examples-searching-sorting/">Searching and Sorting in Python</a></li></ul></div><div class="mobile-content sf-post-content-category" bis_skin_checked="1"><strong>Popular Pages:</strong><br><ul><li><a href="https://www.sanfoundry.com/c-programming-examples-bitwise-operations/">Bitwise Operators in C</a></li><li><a href="https://www.sanfoundry.com/1000-python-questions-answers/">Python MCQ Questions</a></li><li><a href="https://www.sanfoundry.com/cpp-algorithm-library/">C++ Algorithm Library</a></li><li><a href="https://www.sanfoundry.com/c-programming-examples-searching-sorting/">Searching and Sorting Algorithms in C</a></li><li><a href="https://www.sanfoundry.com/csharp-programming-examples-on-functions/">C# Programs on Functions</a></li></ul></div>	</div><!-- .inside-article -->
+</article><!-- #post-## -->
+ <div class="sf-post-mailerlite-category" bis_skin_checked="1">
+<div class="" data-account="381541:z7o9v6x3r7" data-form="5094626:l7r7p0" bis_skin_checked="1"><style type="text/css">
+  @import url(https://assets.mlcdn.com/fonts.css?version=1740470);
+</style>
+<style type="text/css">
+  .ml-form-embedSubmitLoad{display:inline-block;width:20px;height:20px}.g-recaptcha{transform:scale(1);-webkit-transform:scale(1);transform-origin:0 0;-webkit-transform-origin:0 0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}.ml-form-embedSubmitLoad:after{content:" ";display:block;width:11px;height:11px;margin:1px;border-radius:50%;border:4px solid #fff;border-color:#fff #fff #fff transparent;animation:ml-form-embedSubmitLoad 1.2s linear infinite}@keyframes ml-form-embedSubmitLoad{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#mlb2-5094626.ml-form-embedContainer{box-sizing:border-box;display:table;margin:0 auto;position:static;width:100%!important}#mlb2-5094626.ml-form-embedContainer button,#mlb2-5094626.ml-form-embedContainer h4,#mlb2-5094626.ml-form-embedContainer p,#mlb2-5094626.ml-form-embedContainer span{text-transform:none!important;letter-spacing:normal!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper{background-color:#f4f4f4;border-width:0;border-color:transparent;border-radius:4px;border-style:solid;box-sizing:border-box;display:inline-block!important;margin:0;padding:0;position:relative}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper.embedDefault,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper.embedPopup{width:400px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper.embedForm{max-width:400px;width:100%}#mlb2-5094626.ml-form-embedContainer .ml-form-align-left{text-align:left}#mlb2-5094626.ml-form-embedContainer .ml-form-align-center{text-align:center}#mlb2-5094626.ml-form-embedContainer .ml-form-align-default{display:table-cell!important;vertical-align:middle!important;text-align:center!important}#mlb2-5094626.ml-form-embedContainer .ml-form-align-right{text-align:right}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedHeader img{border-top-left-radius:4px;border-top-right-radius:4px;height:auto;margin:0 auto!important;max-width:100%;width:undefinedpx}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody{padding:20px 20px 0 20px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody.ml-form-embedBodyHorizontal{padding-bottom:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent{text-align:left;margin:0 0 20px 0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent h4{color:#000;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:30px;font-weight:400;margin:0 0 10px 0;text-align:left;word-break:break-word}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p{color:#000;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px;font-weight:400;line-height:20px;margin:0 0 10px 0;text-align:left}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ul,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ul{color:#000;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol ol,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol ol{list-style-type:lower-alpha}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent ol ol ol,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent ol ol ol{list-style-type:lower-roman}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p a,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p a{color:#000;text-decoration:underline}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-block-form .ml-field-group{text-align:left!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-block-form .ml-field-group label{margin-bottom:5px;color:#333;font-size:14px;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-weight:700;font-style:normal;text-decoration:none;display:inline-block;line-height:20px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p:last-child,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p:last-child{margin:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody form{margin:0;width:100%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent{margin:0 0 20px 0;width:100%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow{float:left}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent.horozintalForm{margin:0;padding:0 0 20px 0;width:100%;height:auto;float:left}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow{margin:0 0 10px 0;width:100%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-last-item{margin:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-formfieldHorizintal{margin:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input{background-color:#fff!important;color:#333!important;border-color:#ccc;border-radius:4px!important;border-style:solid!important;border-width:1px!important;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px!important;height:auto;line-height:21px!important;margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;padding:10px 10px!important;width:100%!important;box-sizing:border-box!important;max-width:100%!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-webkit-input-placeholder,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input::-webkit-input-placeholder{color:#333}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-moz-placeholder,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input::-moz-placeholder{color:#333}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-ms-input-placeholder,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input:-ms-input-placeholder{color:#333}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-moz-placeholder,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input:-moz-placeholder{color:#333}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow textarea,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow textarea{background-color:#fff!important;color:#333!important;border-color:#ccc;border-radius:4px!important;border-style:solid!important;border-width:1px!important;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px!important;height:auto;line-height:21px!important;margin-bottom:0;margin-top:0;padding:10px 10px!important;width:100%!important;box-sizing:border-box!important;max-width:100%!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::before{border-color:#ccc!important;background-color:#fff!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input.custom-control-input[type=checkbox]{box-sizing:border-box;padding:0;position:absolute;z-index:-1;opacity:0;margin-top:5px;margin-left:-1.5rem;overflow:visible}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::before{border-radius:4px!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow input[type=checkbox]:checked~.label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox input[type=checkbox]:checked~.label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-input:checked~.custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-input:checked~.custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox input[type=checkbox]:checked~.label-description::after{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e")}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-input:checked~.custom-control-label::after{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e")}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow input[type=checkbox]:checked~.label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox input[type=checkbox]:checked~.label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-input:checked~.custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-input:checked~.custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-input:checked~.custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-input:checked~.custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox input[type=checkbox]:checked~.label-description::before{border-color:#000!important;background-color:#000!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-label::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-label::before{top:2px;box-sizing:border-box}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::before{top:0!important;box-sizing:border-box!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before{top:0!important;box-sizing:border-box!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::after{top:0!important;box-sizing:border-box!important;position:absolute;left:-1.5rem;display:block;width:1rem;height:1rem;content:""}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::before{top:0!important;box-sizing:border-box!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .custom-control-label::before{position:absolute;top:4px;left:-1.5rem;display:block;width:16px;height:16px;pointer-events:none;content:"";background-color:#fff;border:#adb5bd solid 1px;border-radius:50%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .custom-control-label::after{position:absolute;top:2px!important;left:-1.5rem;display:block;width:1rem;height:1rem;content:""}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::before,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::before{position:absolute;top:4px;left:-1.5rem;display:block;width:16px;height:16px;pointer-events:none;content:"";background-color:#fff;border:#adb5bd solid 1px;border-radius:50%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::after{position:absolute;top:0!important;left:-1.5rem;display:block;width:1rem;height:1rem;content:""}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::after{position:absolute;top:0!important;left:-1.5rem;display:block;width:1rem;height:1rem;content:""}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .custom-radio .custom-control-label::after{background:no-repeat 50%/50% 50%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .custom-checkbox .custom-control-label::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedPermissions .ml-form-embedPermissionsOptionsCheckbox .label-description::after,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-interestGroupsRow .ml-form-interestGroupsRowCheckbox .label-description::after{background:no-repeat 50%/50% 50%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-control,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-control{position:relative;display:block;min-height:1.5rem;padding-left:1.5rem}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-input,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-input,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-input,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-input{position:absolute;z-index:-1;opacity:0;box-sizing:border-box;padding:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-checkbox .custom-control-label,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-radio .custom-control-label,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-checkbox .custom-control-label,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-radio .custom-control-label{color:#000;font-size:12px!important;font-family:'Open Sans',Arial,Helvetica,sans-serif;line-height:22px;margin-bottom:0;position:relative;vertical-align:top;font-style:normal;font-weight:700}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-select,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-select{background-color:#fff!important;color:#333!important;border-color:#ccc;border-radius:4px!important;border-style:solid!important;border-width:1px!important;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px!important;line-height:20px!important;margin-bottom:0;margin-top:0;padding:10px 28px 10px 12px!important;width:100%!important;box-sizing:border-box!important;max-width:100%!important;height:auto;display:inline-block;vertical-align:middle;background:url(https://assets.mlcdn.com/ml/images/default/dropdown.svg) no-repeat right .75rem center/8px 10px;-webkit-appearance:none;-moz-appearance:none;appearance:none}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow{height:auto;width:100%;float:left}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-input-horizontal{width:70%;float:left}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-button-horizontal{width:30%;float:left}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-button-horizontal.labelsOn{padding-top:25px}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .horizontal-fields{box-sizing:border-box;float:left;padding-right:10px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input{background-color:#fff;color:#333;border-color:#ccc;border-radius:4px;border-style:solid;border-width:1px;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;margin-bottom:0;margin-top:0;padding:10px 10px;width:100%;box-sizing:border-box;overflow-y:initial}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button{background-color:#595959!important;border-color:#595959;border-style:solid;border-width:1px;border-radius:4px;box-shadow:none;color:#fff!important;cursor:pointer;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:14px!important;font-weight:700;line-height:20px;margin:0!important;padding:10px!important;width:100%;height:auto}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button:hover{background-color:#3a3a3a!important;border-color:#3a3a3a!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow input[type=checkbox]{box-sizing:border-box;padding:0;position:absolute;z-index:-1;opacity:0;margin-top:5px;margin-left:-1.5rem;overflow:visible}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description{color:#000;display:block;font-family:'Open Sans',Arial,Helvetica,sans-serif;font-size:12px;text-align:left;margin-bottom:0;position:relative;vertical-align:top}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label{font-weight:400;margin:0;padding:0;position:relative;display:block;min-height:24px;padding-left:24px}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label a{color:#000;text-decoration:underline}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label p{color:#000!important;font-family:'Open Sans',Arial,Helvetica,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:18px!important;padding:0!important;margin:0 5px 0 0!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label p:last-child{margin:0}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit{margin:0 0 20px 0;float:left;width:100%}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button{background-color:#595959!important;border:none!important;border-radius:4px!important;box-shadow:none!important;color:#fff!important;cursor:pointer;font-family:'Open Sans',Arial,Helvetica,sans-serif!important;font-size:14px!important;font-weight:700!important;line-height:21px!important;height:auto;padding:10px!important;width:100%!important;box-sizing:border-box!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button.loading{display:none}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button:hover{background-color:#3a3a3a!important}.ml-subscribe-close{width:30px;height:30px;background:url(https://assets.mlcdn.com/ml/images/default/modal_close.png) no-repeat;background-size:30px;cursor:pointer;margin-top:-10px;margin-right:-10px;position:absolute;top:0;right:0}.ml-error input,.ml-error select,.ml-error textarea{border-color:red!important}.ml-error .custom-checkbox-radio-list{border:1px solid red!important;border-radius:4px;padding:10px}.ml-error .label-description,.ml-error .label-description p,.ml-error .label-description p a,.ml-error label:first-child{color:red!important}#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow.ml-error .label-description p,#mlb2-5094626.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow.ml-error .label-description p:first-letter{color:red!important}@media only screen and (max-width:400px){.ml-form-embedWrapper.embedDefault,.ml-form-embedWrapper.embedPopup{width:100%!important}.ml-form-formContent.horozintalForm{float:left!important}.ml-form-formContent.horozintalForm .ml-form-horizontalRow{height:auto!important;width:100%!important;float:left!important}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-input-horizontal{width:100%!important}.ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-input-horizontal>div{padding-right:0!important;padding-bottom:10px}.ml-form-formContent.horozintalForm .ml-button-horizontal{width:100%!important}.ml-form-formContent.horozintalForm .ml-button-horizontal.labelsOn{padding-top:0!important}}
+</style>
+<div id="mlb2-5094626" class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-5094626" bis_skin_checked="1">
+  <div class="ml-form-align-center" bis_skin_checked="1">
+    <div class="ml-form-embedWrapper embedForm" bis_skin_checked="1">
+      <div class="ml-form-embedBody ml-form-embedBodyDefault row-form" bis_skin_checked="1">
+        <div class="ml-form-embedContent" style="" bis_skin_checked="1">
+          <h4></h4>
+          <p style="text-align:center"><strong><span style="font-size:18px">Subscribe: Python&nbsp;</span></strong><strong><span style="font-size:18px">Newsletter</span></strong><strong></strong><br></p>
+        </div>
+        <form class="ml-block-form" action="https://static.mailerlite.com/webforms/submit/l7r7p0" data-code="l7r7p0" method="post" target="_blank">
+          <div class="ml-form-formContent" bis_skin_checked="1">
+            <div class="ml-form-fieldRow" bis_skin_checked="1">
+              <div class="ml-field-group ml-field-name" bis_skin_checked="1">
+                <input aria-label="name" type="text" class="form-control" data-inputmask="" name="fields[name]" placeholder="Name" autocomplete="given-name" aria-invalid="false">
+              </div>
+            </div>
+            <div class="ml-form-fieldRow ml-last-item" bis_skin_checked="1">
+              <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required" bis_skin_checked="1">
+                <input aria-label="email" aria-required="true" type="email" class="form-control" data-inputmask="" name="fields[email]" placeholder="Email" autocomplete="email" aria-invalid="false">
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="ml-submit" value="1" aria-invalid="false">
+          <div class="ml-form-embedSubmit" bis_skin_checked="1">
+            <button type="submit" class="primary">Subscribe</button>
+            <button disabled="disabled" style="display:none" type="button" class="loading"> <div class="ml-form-embedSubmitLoad" bis_skin_checked="1"></div> <span class="sr-only">Loading...</span> </button>
+          </div>
+          <input type="hidden" name="anticsrf" value="true" aria-invalid="false">
+        </form>
+      </div>
+      <div class="ml-form-successBody row-success" style="display:none" bis_skin_checked="1">
+        <div class="ml-form-successContent" bis_skin_checked="1">
+          <h4></h4>
+          <p style="text-align:center">Your subscription is confirmed. Thank you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<img src="https://track.mailerlite.com/webforms/o/5094626/l7r7p0?v1740473978" width="1" height="1" style="max-width:1px;max-height:1px;visibility:hidden;padding:0;margin:0;display:block" alt="." border="0">
+</div>
+</div>
+      <div style="padding:10px;background:#FFFFFF" bis_skin_checked="1">
+<div style="text-align:center" bis_skin_checked="1">
+Subscribe to our <a href="https://www.sanfoundry.com/newsletter/">Newsletters (Subject-wise)</a>. Participate in the Sanfoundry Certification <a href="https://www.sanfoundry.com/contests/">contest</a> to get free Certificate of Merit. Join our social networks below and stay updated with latest contests, videos, internships and jobs!<br><br>
+
+<a href="https://www.youtube.com/c/SanfoundryOfficial/?sub_confirmation=1" rel="nofollow noopener" target="_blank">Youtube</a> | <a href="https://t.me/sanfoundry" rel="nofollow noopener" target="_blank">Telegram</a> | <a href="https://www.linkedin.com/company/sanfoundry/" rel="nofollow noopener" target="_blank">LinkedIn</a> | <a href="https://www.instagram.com/sanfoundry" rel="nofollow noopener" target="_blank">Instagram</a> | <a href="https://www.facebook.com/sanfoundry" rel="nofollow noopener" target="_blank">Facebook</a> | <a href="https://www.twitter.com/sanfoundry" rel="nofollow noopener" target="_blank">Twitter</a> | <a href="https://www.pinterest.com/sanfoundry/" rel="nofollow noopener" target="_blank">Pinterest</a>
+</div>
+    </div>
+<div class="sf-post-bio" bis_skin_checked="1">
+<div style="float: left; padding-right: 10px;" bis_skin_checked="1">
+<noscript><img src="https://www.sanfoundry.com/wp-content/uploads/2017/01/Manish2.png" alt="Manish Bhojasia - Founder & CTO at Sanfoundry"          class="aligncenter" width="150px" height="150px"></noscript><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20150%20150%22%3E%3C/svg%3E" data-src="https://www.sanfoundry.com/wp-content/uploads/2017/01/Manish2.png" alt="Manish Bhojasia - Founder &amp; CTO at Sanfoundry" class="lazyload aligncenter" width="150px" height="150px">
+</div>
+<a href="https://www.sanfoundry.com/founder/">Manish Bhojasia</a>, a technology veteran with 20+ years @ Cisco &amp; Wipro, is Founder and    CTO at <strong>Sanfoundry</strong>. He lives in Bangalore, and focuses on development of Linux Kernel, SAN Technologies, Advanced C,      Data Structures &amp; Alogrithms.
+Stay connected with him at <a href="https://www.linkedin.com/in/manishbhojasia" rel="nofollow noopener" target="_blank">LinkedIn</a>.
+<br>
+<br>
+Subscribe to his free Masterclasses at <a href="https://www.youtube.com/c/SanfoundryOfficial/?sub_confirmation=1" rel="nofollow noopener" target="_blank">Youtube</a> &amp; discussions at <a href="https://t.me/sanfoundryclasses" rel="nofollow noopener" target="_blank">Telegram    SanfoundryClasses</a>.
+<div style="clear: left;" bis_skin_checked="1"></div>
+</div>
+    		</main>
+
+
+Thường vào id=main class=site-main là lấy được hết tất cả 
+
+Phân tích thật kĩ trước khi làm
+
