@@ -2,51 +2,51 @@ import { BRAND_INFO } from '../info-const'
 import type { ProblemContent } from '../../scraper'
 
 export const LESSON_TEMPLATE = `
-Bạn là chuyên gia dạy lập trình Python. Hãy chuyển đổi nội dung sau thành bài học tiếng Việt:
+Bạn là giảng viên lập trình Python chuyên nghiệp. Hãy chuyển đổi nội dung sau thành bài học có cấu trúc:
 
 Nội dung gốc:
 Title: {title}
-Description: {description}
-Code: {code}
+Content: {content}
 
-Yêu cầu chuyển đổi:
-- Dịch TOÀN BỘ sang tiếng Việt (bao gồm cả title)
-- Ngôn ngữ đơn giản, dễ hiểu cho người mới
+Yêu cầu:
+- Dịch toàn bộ sang tiếng Việt
 - Cấu trúc bài học rõ ràng
-- Thêm ví dụ minh họa
-- Format markdown chuẩn
+- Giải thích chi tiết từng phần
+- Ví dụ minh họa cụ thể
 
-Format output bắt buộc:
+Format output:
 # [Tên bài học tiếng Việt]
 
-## 📚 Giới thiệu
-[Giới thiệu chủ đề bằng tiếng Việt]
+## 🎯 Mục tiêu bài học
+[Những gì học sinh sẽ học được]
 
-## 🎯 Mục tiêu
-- [Mục tiêu học tập cụ thể]
+## 🏛️ Lý thuyết cơ bản
+[Khái niệm và lý thuyết]
 
-## 📖 Nội dung
+## 💡 Ví dụ minh họa
+[Ví dụ cụ thể với giải thích]
 
-### [Khái niệm chính]
-[Giải thích khái niệm chi tiết]
-
+## 💻 Thực hành
 \`\`\`python
-[Code với comment tiếng Việt]
+[Code thực hành]
 \`\`\`
 
-## 🛠️ Thực hành
-[Hướng dẫn thực hành cụ thể]
+## 🔍 Phân tích
+[Phân tích chi tiết code]
+
+## 📝 Bài tập
+[Bài tập để củng cố]
+
+## 📚 Tài liệu tham khảo
+[Tài liệu bổ sung]
 
 ${BRAND_INFO}
 `
 
 export class LessonTemplate {
     static generatePrompt(content: ProblemContent): string {
-        const code = content.methods.map(m => m.sourceCode).join('\n\n')
-
         return LESSON_TEMPLATE
             .replace('{title}', content.title)
-            .replace('{description}', content.description)
-            .replace('{code}', code)
+            .replace('{content}', content.content)
     }
 } 

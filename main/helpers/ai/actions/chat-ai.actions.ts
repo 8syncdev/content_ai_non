@@ -43,17 +43,8 @@ export class ChatAIActions {
                 // Fallback to simple content
                 result = `# ${content.title}
 
-**Mô tả:** ${content.description}
-
-**Code:**
-\`\`\`python
-${content.methods.map(m => m.sourceCode).join('\n\n')}
-\`\`\`
-
-**Test Cases:**
-\`\`\`
-${content.testCases.join('\n')}
-\`\`\`
+**Nội dung gốc:**
+${content.content}
 
 ---
 Tác giả: Nguyễn Phương Anh Tú  
@@ -110,14 +101,12 @@ Phone/Zalo: 0767449819`
             case 'lesson':
                 return LessonTemplate.generatePrompt(content)
             case 'raw':
-                return `Chuyển đổi nội dung sau sang tiếng Việt, giữ nguyên test cases:
+                return `Chuyển đổi nội dung sau sang tiếng Việt, giữ nguyên format và cấu trúc:
 
 Title: ${content.title}
-Description: ${content.description}
-Code: ${content.methods.map(m => m.sourceCode).join('\n\n')}
-Test Cases: ${content.testCases.join('\n')}
+Content: ${content.content}
 
-Yêu cầu: Dịch tiếng Việt tự nhiên, format markdown, giữ nguyên code và test cases.`
+Yêu cầu: Dịch tiếng Việt tự nhiên, format markdown, giữ nguyên code và test cases nếu có.`
             default:
                 throw new Error(`Unknown template type: ${templateType}`)
         }

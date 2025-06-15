@@ -11,7 +11,7 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
     provider: 'mistral',
     apiKey: 'AhjH8mbZ51JANWzJRbkbBsESb4rQQKmu', // User must provide their own key
     model: 'devstral-small-2505',
-    temperature: 0.7,
+    temperature: 0.85,
     maxTokens: 4000
 }
 

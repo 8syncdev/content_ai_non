@@ -28,20 +28,8 @@ export interface ProblemLink {
 
 export interface ProblemContent {
     title: string
-    description: string
-    methods: ProblemMethod[]
-    solutions: string[]
-    testCases: string[]
+    content: string
     url: string
-}
-
-export interface ProblemMethod {
-    name: string
-    description: string
-    sourceCode: string
-    explanation: string
-    testCases: string[]
-    complexity: string
 }
 
 export class ContentScraper {
@@ -278,11 +266,11 @@ export class ContentScraper {
             log(`📄 Scraping problem: ${url}`)
 
             // Retry logic cho việc load trang
-            let content = ''
+            let pageContent = ''
             let retryCount = 0
             const maxRetries = 2
 
-            while (retryCount < maxRetries && !content) {
+            while (retryCount < maxRetries && !pageContent) {
                 try {
                     await this.page.goto(url, {
                         waitUntil: 'domcontentloaded',
@@ -290,7 +278,7 @@ export class ContentScraper {
                     })
 
                     // Đợi main content
-                    await this.page.waitForSelector('#main.site-main', { timeout: 10000 })
+                    await this.page.waitForSelector('body', { timeout: 10000 })
                     await this.delay(2000)
 
                     // Scroll để trigger lazy loading
@@ -299,7 +287,7 @@ export class ContentScraper {
                     })
                     await this.delay(1000)
 
-                    content = await this.page.content()
+                    pageContent = await this.page.content()
                     break
                 } catch (error) {
                     retryCount++
@@ -309,186 +297,32 @@ export class ContentScraper {
                 }
             }
 
-            if (!content) {
+            if (!pageContent) {
                 throw new Error('Failed to get page content')
             }
 
             // Parse HTML với Cheerio
-            const $ = cheerio.load(content)
-            const mainContent = $('#main.site-main')
+            const $ = cheerio.load(pageContent)
 
-            if (mainContent.length === 0) {
-                throw new Error('Main content not found')
-            }
-
-            // Lấy title từ h1.entry-title
-            const title = mainContent.find('h1.entry-title').text().trim() || 'Untitled'
+            // Lấy title từ header có class="entry-header"
+            const headerElement = $('.entry-header')
+            const title = headerElement.text().trim() || 'Untitled'
             log(`📝 Found title: ${title}`)
 
-            // Lấy description từ đoạn đầu tiên
-            const description = mainContent.find('.entry-content p').first().text().trim() || ''
+            // Lấy content từ div có class="entry-content"
+            const contentElement = $('.entry-content')
+            const content = contentElement.text().trim() || ''
+            log(`📄 Content length: ${content.length} characters`)
 
-            // Tìm tất cả các method sections
-            const methods: any[] = []
-            const solutions: string[] = []
-            const testCases: string[] = []
-
-            // Tìm các method bằng cách tìm div.sf-codeh chứa "Method"
-            mainContent.find('.sf-codeh').each((index, element) => {
-                const methodText = $(element).text().trim()
-
-                if (methodText.includes('Method') && methodText.match(/Method\s+\d+/)) {
-                    const methodNumber = methodText.match(/Method\s+(\d+)/)?.[1] || (index + 1).toString()
-
-                    // Tìm description của method (đoạn text sau method header)
-                    let methodDescription = ''
-                    let nextElement = $(element).next()
-                    while (nextElement.length && !nextElement.hasClass('sf-codeh') && nextElement.prop('tagName') !== 'DIV') {
-                        if (nextElement.prop('tagName') === 'P') {
-                            methodDescription += nextElement.text().trim() + ' '
-                        }
-                        nextElement = nextElement.next()
-                    }
-
-                    // Tìm source code (trong .hk1_style pre hoặc .python pre)
-                    let sourceCode = ''
-                    let codeElement = $(element)
-                    for (let i = 0; i < 10; i++) { // Tìm trong 10 element tiếp theo
-                        codeElement = codeElement.next()
-                        if (codeElement.length === 0) break
-
-                        const codeBlock = codeElement.find('.hk1_style pre, .python pre').first()
-                        if (codeBlock.length > 0) {
-                            sourceCode = codeBlock.text().trim()
-                            break
-                        }
-                    }
-
-                    // Tìm program explanation
-                    let explanation = ''
-                    let explanationElement = $(element)
-                    let foundExplanation = false
-                    for (let i = 0; i < 15; i++) {
-                        explanationElement = explanationElement.next()
-                        if (explanationElement.length === 0) break
-
-                        const explanationHeader = explanationElement.find('.sf-codeh').text()
-                        if (explanationHeader.includes('Program Explanation') || explanationHeader.includes('Explanation')) {
-                            foundExplanation = true
-                            // Lấy các đoạn text sau explanation header
-                            let nextExplElement = explanationElement.next()
-                            while (nextExplElement.length && !nextExplElement.hasClass('sf-codeh')) {
-                                if (nextExplElement.prop('tagName') === 'P' || nextExplElement.prop('tagName') === 'OL') {
-                                    explanation += nextExplElement.text().trim() + '\n'
-                                }
-                                nextExplElement = nextExplElement.next()
-                            }
-                            break
-                        }
-                    }
-
-                    // Tìm test cases (trong .text pre)
-                    let methodTestCases: string[] = []
-                    let testElement = $(element)
-                    for (let i = 0; i < 20; i++) {
-                        testElement = testElement.next()
-                        if (testElement.length === 0) break
-
-                        const testHeader = testElement.find('.sf-codeh').text()
-                        if (testHeader.includes('Runtime Test Cases') || testHeader.includes('Test case')) {
-                            // Tìm tất cả test cases sau header này
-                            let nextTestElement = testElement.next()
-                            while (nextTestElement.length) {
-                                const testCodeBlock = nextTestElement.find('.text pre')
-                                if (testCodeBlock.length > 0) {
-                                    methodTestCases.push(testCodeBlock.text().trim())
-                                }
-
-                                // Dừng nếu gặp method mới hoặc hết content
-                                if (nextTestElement.find('.sf-codeh').text().includes('Method') ||
-                                    nextTestElement.find('.sf-codeh').text().includes('Related Posts')) {
-                                    break
-                                }
-                                nextTestElement = nextTestElement.next()
-                            }
-                            break
-                        }
-                    }
-
-                    // Tìm time/space complexity
-                    let complexity = ''
-                    let complexityElement = $(element)
-                    for (let i = 0; i < 15; i++) {
-                        complexityElement = complexityElement.next()
-                        if (complexityElement.length === 0) break
-
-                        const complexityText = complexityElement.text()
-                        if (complexityText.includes('Time Complexity') || complexityText.includes('Space Complexity')) {
-                            complexity += complexityText.trim() + '\n'
-                        }
-                    }
-
-                    if (sourceCode || methodDescription) {
-                        methods.push({
-                            name: `Method ${methodNumber}`,
-                            description: methodDescription.trim(),
-                            sourceCode: sourceCode,
-                            explanation: explanation.trim(),
-                            testCases: methodTestCases,
-                            complexity: complexity.trim()
-                        })
-
-                        // Thêm vào solutions và testCases arrays
-                        if (sourceCode) solutions.push(sourceCode)
-                        methodTestCases.forEach(tc => testCases.push(tc))
-                    }
-                }
-            })
-
-            // Nếu không tìm thấy method nào, thử tìm code blocks chung
-            if (methods.length === 0) {
-                log(`⚠️ No methods found, trying to find general code blocks`)
-
-                // Tìm tất cả code blocks
-                mainContent.find('.hk1_style pre, .python pre').each((index, element) => {
-                    const code = $(element).text().trim()
-                    if (code && code.length > 10) {
-                        solutions.push(code)
-                    }
-                })
-
-                // Tìm tất cả test cases
-                mainContent.find('.text pre').each((index, element) => {
-                    const testCase = $(element).text().trim()
-                    if (testCase && testCase.length > 5) {
-                        testCases.push(testCase)
-                    }
-                })
-
-                // Tạo một method chung nếu có code
-                if (solutions.length > 0) {
-                    methods.push({
-                        name: 'Main Solution',
-                        description: description,
-                        sourceCode: solutions[0],
-                        explanation: '',
-                        testCases: testCases,
-                        complexity: ''
-                    })
-                }
+            if (!title && !content) {
+                throw new Error('No title or content found')
             }
 
-            const result: ProblemContent = {
+            return {
                 title,
-                description,
-                methods,
-                solutions,
-                testCases,
+                content,
                 url
             }
-
-            log(`✅ Scraped successfully: ${methods.length} methods, ${solutions.length} solutions, ${testCases.length} test cases`)
-            return result
 
         } catch (error) {
             log(`❌ Error scraping ${url}: ${error.message}`)
@@ -518,75 +352,31 @@ export class ContentScraper {
             let markdownContent: string
 
             // Kiểm tra xem content có được AI xử lý hay không
-            if ((content as any).aiEnhanced && (content as any).description) {
+            if ((content as any).aiEnhanced && (content as any).aiProcessedContent) {
                 log(`🤖 Using AI-enhanced content for: ${content.title}`)
                 log(`📝 AI template: ${(content as any).aiTemplate}`)
                 log(`⏱️ AI processing time: ${(content as any).aiProcessingTime}ms`)
 
                 // Sử dụng AI-processed markdown trực tiếp
-                markdownContent = (content as any).description
+                markdownContent = (content as any).aiProcessedContent
 
                 log(`📏 AI content length: ${markdownContent.length} characters`)
             } else {
-                log(`📄 Using original content format for: ${content.title}`)
+                log(`📄 Using simple content format for: ${content.title}`)
 
-                // Tạo nội dung markdown theo format cũ
-                markdownContent = `# ${content.title}\n\n`
+                // Tạo nội dung markdown đơn giản
+                markdownContent = `# ${content.title}
 
-                if (content.description) {
-                    markdownContent += `## 📋 Mô tả bài toán\n${content.description}\n\n`
-                }
+## 📋 Nội dung
 
-                // Nếu có methods chi tiết
-                if (content.methods.length > 0) {
-                    content.methods.forEach((method, index) => {
-                        markdownContent += `## ${method.name}\n\n`
+${content.content}
 
-                        if (method.description) {
-                            markdownContent += `### Mô tả\n${method.description}\n\n`
-                        }
+---
 
-                        if (method.sourceCode) {
-                            markdownContent += `### 💻 Source Code\n\`\`\`python\n${method.sourceCode}\n\`\`\`\n\n`
-                        }
+**Nguồn:** [${content.url}](${content.url})
 
-                        if (method.explanation) {
-                            markdownContent += `### 📝 Giải thích\n${method.explanation}\n\n`
-                        }
-
-                        if (method.testCases.length > 0) {
-                            markdownContent += `### 🧪 Test Cases\n`
-                            method.testCases.forEach((testCase, tcIndex) => {
-                                markdownContent += `**Test case ${tcIndex + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
-                            })
-                        }
-
-                        if (method.complexity) {
-                            markdownContent += `### ⚡ Complexity\n${method.complexity}\n\n`
-                        }
-
-                        markdownContent += `---\n\n`
-                    })
-                } else {
-                    // Fallback nếu không có methods
-                    if (content.solutions.length > 0) {
-                        markdownContent += `## 💻 Solutions\n\n`
-                        content.solutions.forEach((solution, index) => {
-                            markdownContent += `### Solution ${index + 1}\n\`\`\`python\n${solution}\n\`\`\`\n\n`
-                        })
-                    }
-
-                    if (content.testCases.length > 0) {
-                        markdownContent += `## 🧪 Test Cases\n\n`
-                        content.testCases.forEach((testCase, index) => {
-                            markdownContent += `**Test case ${index + 1}:**\n\`\`\`\n${testCase}\n\`\`\`\n\n`
-                        })
-                    }
-                }
-
-                // Thêm thông tin nguồn
-                markdownContent += `---\n\n**Nguồn:** [${content.url}](${content.url})\n\n`
-                markdownContent += `**Thời gian tạo:** ${new Date().toLocaleString('vi-VN')}\n`
+**Thời gian tạo:** ${new Date().toLocaleString('vi-VN')}
+`
             }
 
             await fs.writeFile(filePath, markdownContent, 'utf-8')

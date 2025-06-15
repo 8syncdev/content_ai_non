@@ -11,20 +11,8 @@ export interface ProblemLink {
 
 export interface ProblemContent {
     title: string
-    description: string
-    methods: ProblemMethod[]
-    solutions: string[]
-    testCases: string[]
+    content: string
     url: string
-}
-
-export interface ProblemMethod {
-    name: string
-    description: string
-    sourceCode: string
-    explanation: string
-    testCases: string[]
-    complexity: string
 }
 
 export interface AIProcessingOptions {

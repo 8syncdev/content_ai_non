@@ -93,9 +93,7 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
           log(`🔄 Starting AI processing...`)
           log(`📊 Content structure:`)
           log(`  - Title: ${content.title}`)
-          log(`  - Description length: ${content.description?.length || 0}`)
-          log(`  - Methods count: ${content.methods?.length || 0}`)
-          log(`  - Test cases count: ${content.testCases?.length || 0}`)
+          log(`  - Content length: ${content.content?.length || 0}`)
 
           const aiResult = await aiActions.processContent(content, aiOptions)
           log(`📊 AI Result: success=${aiResult.success}, processingTime=${aiResult.processingTime}ms`)
@@ -104,28 +102,28 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
             log(`✅ AI processing successful`)
             log(`📏 AI output length: ${aiResult.data.length} characters`)
 
-            // Use AI-processed markdown as description
+            // Use AI-processed markdown as aiProcessedContent
             finalContent = {
               ...content,
-              description: aiResult.data, // AI-generated markdown
+              aiProcessedContent: aiResult.data, // AI-generated markdown
               aiEnhanced: true,
               aiTemplate: aiOptions.templateType,
               aiProcessingTime: aiResult.processingTime,
-              originalDescription: content.description
+              originalContent: content.content
             }
 
             log(`🎨 Final content prepared with AI enhancement`)
-            log(`📝 Final description length: ${finalContent.description.length}`)
+            log(`📝 Final AI content length: ${finalContent.aiProcessedContent.length}`)
           } else {
             log(`⚠️ AI processing failed: ${aiResult.error}`)
-            log(`📄 Using enhanced template as fallback`)
+            log(`📄 Using simple template as fallback`)
 
-            // Use enhanced template fallback
+            // Use simple template fallback
             const fallbackResult = await aiActions.processContent(content, { ...aiOptions, useAI: false })
             if (fallbackResult.success && fallbackResult.data) {
               finalContent = {
                 ...content,
-                description: fallbackResult.data,
+                aiProcessedContent: fallbackResult.data,
                 aiEnhanced: false,
                 templateEnhanced: true,
                 aiTemplate: aiOptions.templateType
@@ -134,15 +132,15 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
           }
         } catch (aiError) {
           log(`❌ AI processing error: ${aiError.message}`)
-          log(`📄 Using enhanced template as fallback`)
+          log(`📄 Using simple template as fallback`)
 
-          // Use enhanced template fallback
+          // Use simple template fallback
           try {
             const fallbackResult = await aiActions.processContent(content, { ...aiOptions, useAI: false })
             if (fallbackResult.success && fallbackResult.data) {
               finalContent = {
                 ...content,
-                description: fallbackResult.data,
+                aiProcessedContent: fallbackResult.data,
                 aiEnhanced: false,
                 templateEnhanced: true,
                 aiTemplate: aiOptions.templateType

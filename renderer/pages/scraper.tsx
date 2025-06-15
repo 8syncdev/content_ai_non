@@ -411,10 +411,7 @@ function ScraperPage() {
       if (result.success && result.data) {
         addLog(`✅ Scrape thành công!`)
         addLog(`📝 Title: ${result.data.title}`)
-        addLog(`📄 Description: ${result.data.description?.substring(0, 100)}...`)
-        addLog(`🔧 Methods: ${result.data.methods.length}`)
-        addLog(`💻 Solutions: ${result.data.solutions.length}`)
-        addLog(`🧪 Test cases: ${result.data.testCases.length}`)
+        addLog(`📄 Content length: ${result.data.content?.length || 0} characters`)
 
         // Test export với index
         const exportResult = await window.electron.scraper.exportContent(result.data, firstTopic.name, 0, 0)
