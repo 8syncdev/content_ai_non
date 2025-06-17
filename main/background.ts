@@ -226,7 +226,9 @@ ipcMain.handle('app:getProgrammingLanguages', async () => {
         preload: `${__dirname}/preload.js`,
         nodeIntegration: false,
         contextIsolation: true,
+        devTools: false
       },
+      icon: path.join(__dirname, '..', 'resources', 'icon.ico'),
     })
 
     if (isProd) {
