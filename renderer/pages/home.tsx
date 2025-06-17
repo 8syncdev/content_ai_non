@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { AppProvider } from '../contexts/AppContext'
 import Layout from '../components/Layout'
 import { useRouter } from 'next/router'
@@ -11,11 +11,27 @@ import {
   ArrowRight,
   Zap,
   Target,
-  TrendingUp
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Globe,
+  Archive
 } from 'lucide-react'
+import BrowserStatus from '../components/BrowserStatus'
+import { useApp } from '../contexts/AppContext'
 
 function HomePage() {
   const router = useRouter()
+  const { state } = useApp()
+  const [recentActivities] = useState([
+    { id: 1, action: 'Scraped Python Basics', time: '2 phút trước', status: 'success' },
+    { id: 2, action: 'Exported 15 exercises', time: '5 phút trước', status: 'success' },
+    { id: 3, action: 'AI Processing completed', time: '10 phút trước', status: 'success' },
+    { id: 4, action: 'Updated scraper settings', time: '1 giờ trước', status: 'info' }
+  ])
+
+  const [browserReady, setBrowserReady] = useState(false)
 
   const tools = [
     {
@@ -72,6 +88,10 @@ function HomePage() {
     router.push(path)
   }
 
+  const handleBrowserStatusChange = (status: { browserExists: boolean; isInstalling: boolean }) => {
+    setBrowserReady(status.browserExists && !status.isInstalling)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-8">
       {/* Header */}
@@ -82,6 +102,15 @@ function HomePage() {
         <p className="text-gray-600 text-xl">
           Chọn công cụ để bắt đầu tạo nội dung bài tập lập trình
         </p>
+      </div>
+
+      {/* Browser Status - Hiển thị ngay đầu trang */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+          <Globe className="h-5 w-5 mr-2 text-blue-600" />
+          Trạng thái hệ thống
+        </h2>
+        <BrowserStatus onStatusChange={handleBrowserStatusChange} />
       </div>
 
       {/* Quick Start */}
@@ -102,7 +131,8 @@ function HomePage() {
           </div>
           <button
             onClick={() => handleToolClick('/scraper')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-2xl font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className={`bg-white text-blue-600 px-8 py-4 rounded-2xl font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-105 ${browserReady ? '' : 'opacity-50 cursor-not-allowed'}`}
+            disabled={!browserReady}
           >
             <Play className="w-5 h-5" />
             <span>Thu thập ngay</span>
@@ -135,8 +165,8 @@ function HomePage() {
 
             <div className="flex items-center justify-between">
               <span className={`text-xs px-3 py-2 rounded-full font-medium ${tool.status === 'ready'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-yellow-100 text-yellow-800'
                 }`}>
                 {tool.status === 'ready' ? '✅ Sẵn sàng' : '🚧 Đang phát triển'}
               </span>
@@ -153,41 +183,109 @@ function HomePage() {
               <Target className="w-6 h-6 text-blue-600" />
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-3xl font-bold text-gray-900">{state.progress.totalProblems || 0}</p>
               <p className="text-blue-600 font-medium">bài tập</p>
             </div>
           </div>
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Tổng bài tập</h3>
-          <p className="text-sm text-gray-500">Chưa có dữ liệu được thu thập</p>
+          <p className="text-sm text-gray-500">Đã phát hiện từ các nguồn</p>
         </div>
 
         <div className="bg-gradient-to-br from-white to-green-50 rounded-3xl p-8 shadow-lg border border-green-100">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-green-100 rounded-2xl">
-              <Download className="w-6 h-6 text-green-600" />
+              <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-3xl font-bold text-gray-900">{state.progress.completedProblems || 0}</p>
               <p className="text-green-600 font-medium">hoàn thành</p>
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Đã thu thập</h3>
-          <p className="text-sm text-gray-500">Bắt đầu scraping để xem kết quả</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Đã xử lý</h3>
+          <p className="text-sm text-gray-500">Bài tập đã được scrape</p>
         </div>
 
         <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl p-8 shadow-lg border border-purple-100">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-100 rounded-2xl">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+              <Archive className="w-6 h-6 text-purple-600" />
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-gray-900">0<span className="text-xl text-purple-600">%</span></p>
-              <p className="text-purple-600 font-medium">thành công</p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-purple-600 font-medium">file MD</p>
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Tỷ lệ thành công</h3>
-          <p className="text-sm text-gray-500">Theo dõi hiệu suất scraping</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Đã xuất</h3>
+          <p className="text-sm text-gray-500">File markdown đã tạo</p>
         </div>
+      </div>
+
+      {/* Recent Activities */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <Clock className="h-5 w-5 mr-2 text-gray-500" />
+            Hoạt động gần đây
+          </h2>
+          <div className="space-y-3">
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-center p-3 bg-gray-50 rounded-xl">
+                <div className={`p-2 rounded-lg mr-3 ${activity.status === 'success' ? 'bg-green-100' : 'bg-blue-100'
+                  }`}>
+                  {activity.status === 'success' ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                  <p className="text-xs text-gray-500">{activity.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Progress Overview */}
+        {state.progress.isRunning && (
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+            <h2 className="text-xl font-semibold text-purple-900 mb-4 flex items-center">
+              <Activity className="h-5 w-5 mr-2" />
+              Tiến độ hiện tại
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-purple-700">Tổng tiến độ</span>
+                  <span className="text-purple-900 font-semibold">
+                    {state.progress.completedProblems}/{state.progress.totalProblems}
+                  </span>
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${state.progress.totalProblems > 0
+                        ? (state.progress.completedProblems / state.progress.totalProblems) * 100
+                        : 0}%`
+                    }}
+                  />
+                </div>
+              </div>
+              {state.progress.currentTopic && (
+                <p className="text-purple-800">
+                  <strong>Chủ đề hiện tại:</strong> {state.progress.currentTopic}
+                </p>
+              )}
+              {state.progress.currentProblem && (
+                <p className="text-purple-800">
+                  <strong>Bài tập:</strong> {state.progress.currentProblem}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

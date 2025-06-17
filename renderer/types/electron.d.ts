@@ -44,6 +44,12 @@ export interface ProgrammingLanguage {
     icon: string
 }
 
+export interface BrowserStatus {
+    browserExists: boolean
+    executablePath: string
+    browserDir: string
+}
+
 declare global {
     interface Window {
         electron: {
@@ -57,6 +63,11 @@ declare global {
             ai: {
                 processContent: (content: ProblemContent, options: AIProcessingOptions) => Promise<AIResponse>
                 setApiKey: (apiKey: string) => Promise<{ success: boolean; error?: string }>
+            }
+            browser: {
+                check: () => Promise<{ success: boolean; data?: BrowserStatus; error?: string }>
+                install: () => Promise<{ success: boolean; error?: string }>
+                checkAndInstall: () => Promise<{ success: boolean; browserExists?: boolean; error?: string }>
             }
             app: {
                 getProgrammingLanguages: () => Promise<{ success: boolean; data?: Record<string, ProgrammingLanguage>; error?: string }>

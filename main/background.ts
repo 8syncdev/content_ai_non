@@ -3,9 +3,11 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
 import { ContentScraper } from './helpers/scraper'
-import { ensureDirectories, log } from './settings'
+import { ensureDirectories, log, checkBrowserExists, getBrowserExecutablePath } from './settings'
 import { aiActions } from './helpers/ai/actions/chat-ai.actions'
 import { PROGRAMMING_LANGUAGES } from './helpers/ai/info-const'
+import { execSync } from 'child_process'
+import * as fs from 'fs-extra'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -17,10 +19,116 @@ if (isProd) {
 
 let scraper: ContentScraper | null = null
 
+// Browser Management Functions
+async function downloadBrowser(): Promise<{ success: boolean; error?: string }> {
+  try {
+    log('📦 Starting browser download...')
+
+    // Ensure browser directory exists
+    const browserDir = path.join(process.cwd(), 'temp', 'browser')
+    await fs.ensureDir(browserDir)
+
+    // Set environment variable for custom browser location
+    process.env.PLAYWRIGHT_BROWSERS_PATH = browserDir
+
+    log(`📁 Browser installation directory: ${browserDir}`)
+
+    // Install chromium browser
+    execSync('npx playwright install chromium', {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+      env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: browserDir }
+    })
+
+    log('✅ Browser installation completed successfully!')
+    return { success: true }
+  } catch (error) {
+    log(`❌ Browser installation failed: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+}
+
+async function checkAndInstallBrowser(): Promise<{ success: boolean; browserExists: boolean; error?: string }> {
+  try {
+    log('🔍 Checking browser availability...')
+
+    const browserExists = await checkBrowserExists()
+
+    if (browserExists) {
+      log('✅ Browser found and ready')
+      return { success: true, browserExists: true }
+    }
+
+    log('⚠️ Browser not found, starting auto-installation...')
+    const installResult = await downloadBrowser()
+
+    if (installResult.success) {
+      // Verify installation
+      const verifyExists = await checkBrowserExists()
+      if (verifyExists) {
+        log('✅ Browser installed and verified successfully')
+        return { success: true, browserExists: true }
+      } else {
+        log('❌ Browser installation verification failed')
+        return { success: false, browserExists: false, error: 'Installation verification failed' }
+      }
+    } else {
+      return { success: false, browserExists: false, error: installResult.error }
+    }
+  } catch (error) {
+    log(`❌ Browser check/install failed: ${error.message}`)
+    return { success: false, browserExists: false, error: error.message }
+  }
+}
+
+// Browser IPC Handlers
+ipcMain.handle('browser:check', async () => {
+  try {
+    const browserExists = await checkBrowserExists()
+    const executablePath = getBrowserExecutablePath()
+
+    return {
+      success: true,
+      data: {
+        browserExists,
+        executablePath,
+        browserDir: path.join(process.cwd(), 'temp', 'browser')
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('browser:install', async () => {
+  try {
+    const result = await downloadBrowser()
+    return result
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('browser:checkAndInstall', async () => {
+  try {
+    const result = await checkAndInstallBrowser()
+    return result
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+})
+
 // IPC Handlers
 ipcMain.handle('scraper:initialize', async () => {
   try {
     log('🚀 Initializing scraper from main process...')
+
+    // Auto-check and install browser if needed
+    const browserResult = await checkAndInstallBrowser()
+    if (!browserResult.success || !browserResult.browserExists) {
+      throw new Error(`Browser not available: ${browserResult.error}`)
+    }
+
     await ensureDirectories()
     scraper = new ContentScraper()
     await scraper.initialize()
@@ -218,6 +326,15 @@ ipcMain.handle('app:getProgrammingLanguages', async () => {
     await app.whenReady()
 
     log('🚀 Electron app ready, creating main window...')
+
+    // Auto-check browser on app startup
+    log('🔍 Performing initial browser check...')
+    const browserCheck = await checkAndInstallBrowser()
+    if (browserCheck.success && browserCheck.browserExists) {
+      log('✅ Browser ready for use')
+    } else {
+      log(`⚠️ Browser check result: ${browserCheck.error || 'Unknown error'}`)
+    }
 
     const mainWindow = createWindow('main', {
       width: 1400,

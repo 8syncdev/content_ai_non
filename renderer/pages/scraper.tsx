@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { AppProvider, useApp } from '../contexts/AppContext'
 import Layout from '../components/Layout'
+import BrowserStatus from '../components/BrowserStatus'
 import {
   Play,
   Pause,
@@ -54,6 +55,7 @@ function ScraperPage() {
     successRate: 0,
     exportedFiles: 0
   })
+  const [browserReady, setBrowserReady] = useState(false)
 
   // AI Processing Options
   const [useAI, setUseAI] = useState(false)
@@ -73,6 +75,10 @@ function ScraperPage() {
 
   // Ref để control scraping từ bên ngoài
   const scrapingControlRef = useRef({ shouldStop: false })
+
+  const handleBrowserStatusChange = (status: { browserExists: boolean; isInstalling: boolean }) => {
+    setBrowserReady(status.browserExists && !status.isInstalling)
+  }
 
   const tabs = [
     {
@@ -510,7 +516,7 @@ function ScraperPage() {
         <div className="flex space-x-3">
           <button
             onClick={loadTopics}
-            disabled={isLoading || !isInitialized}
+            disabled={isLoading || !isInitialized || !browserReady}
             className="bg-white/20 text-white px-4 py-2 rounded-xl font-semibold hover:bg-white/30 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50"
           >
             {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
@@ -518,7 +524,7 @@ function ScraperPage() {
           </button>
           <button
             onClick={exportAllTopics}
-            disabled={!isInitialized || isScrapingActive || topics.length === 0}
+            disabled={!isInitialized || isScrapingActive || topics.length === 0 || !browserReady}
             className="bg-white text-blue-600 px-6 py-2 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50"
           >
             <Package className="w-4 h-4" />
@@ -528,8 +534,20 @@ function ScraperPage() {
         </div>
       </div>
 
+      {/* Browser Status Warning */}
+      {!browserReady && (
+        <div className="mt-4 pt-4 border-t border-white/20">
+          <div className="flex items-center text-yellow-200">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            <span className="text-sm font-medium">
+              ⚠️ Browser chưa sẵn sàng. Vui lòng cài đặt browser trước khi sử dụng.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* AI Status Indicator */}
-      {useAI && (
+      {useAI && browserReady && (
         <div className="mt-4 pt-4 border-t border-white/20">
           <div className="flex items-center text-blue-100">
             <Bot className="w-4 h-4 mr-2" />
@@ -627,7 +645,7 @@ function ScraperPage() {
           />
           <button
             onClick={loadTopics}
-            disabled={isLoading || !isInitialized}
+            disabled={isLoading || !isInitialized || !browserReady}
             className="btn-primary flex items-center space-x-2"
           >
             {isLoading ? <Loader className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
@@ -647,7 +665,7 @@ function ScraperPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <button
             onClick={startScraping}
-            disabled={!isInitialized || isScrapingActive || selectedTopics.length === 0}
+            disabled={!isInitialized || isScrapingActive || selectedTopics.length === 0 || !browserReady}
             className="btn-success flex items-center justify-center space-x-2"
           >
             <Play className="w-4 h-4" />
@@ -663,7 +681,7 @@ function ScraperPage() {
           </button>
           <button
             onClick={testScrapeOne}
-            disabled={!isInitialized || isScrapingActive || topics.length === 0}
+            disabled={!isInitialized || isScrapingActive || topics.length === 0 || !browserReady}
             className="btn-warning flex items-center justify-center space-x-2"
           >
             <AlertCircle className="w-4 h-4" />
@@ -671,7 +689,7 @@ function ScraperPage() {
           </button>
           <button
             onClick={initializeScraper}
-            disabled={isLoading}
+            disabled={isLoading || !browserReady}
             className="btn-secondary flex items-center justify-center space-x-2"
           >
             <RefreshCw className="w-4 h-4" />
@@ -1121,6 +1139,11 @@ function ScraperPage() {
         <p className="text-gray-600 text-lg">
           Scrape bài tập lập trình Python từ website Sanfoundry với UI/UX hiện đại
         </p>
+      </div>
+
+      {/* Browser Status */}
+      <div className="mb-6">
+        <BrowserStatus onStatusChange={handleBrowserStatusChange} />
       </div>
 
       {/* Quick Start */}

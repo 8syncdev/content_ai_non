@@ -1,6 +1,6 @@
-appId: com.example.nextron
-productName: My Nextron App
-copyright: Copyright © 2018 Yoshihide Shiono
+appId: com.kevinnguyen.contentcreator
+productName: Content Creator Desktop
+copyright: Copyright © 2024 Kevin Nguyễn
 directories:
   output: dist
   buildResources: resources
@@ -10,3 +10,18 @@ files:
       - package.json
       - app
 publish: null
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Content Creator
+win:
+  target: nsis
+  icon: resources/icon.ico
+mac:
+  target: dmg
+  icon: resources/icon.icns
+linux:
+  target: AppImage
+  icon: resources/icon.png
