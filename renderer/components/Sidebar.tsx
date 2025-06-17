@@ -31,10 +31,10 @@ const navigationItems = [
     },
     {
         name: 'Quản lý nội dung',
-        href: '/content',
+        href: '/next',
         icon: FileText,
-        color: 'text-purple-600',
-        hoverColor: 'hover:bg-purple-50'
+        color: 'text-indigo-600',
+        hoverColor: 'hover:bg-indigo-50'
     },
     {
         name: 'Theo dõi tiến độ',

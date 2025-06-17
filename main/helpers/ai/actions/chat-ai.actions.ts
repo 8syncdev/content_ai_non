@@ -2,6 +2,7 @@ import { DEFAULT_AI_CONFIG, TemplateType } from '../info-const'
 import type { ProblemContent } from '../../scraper'
 import { ExerciseTemplate } from '../template/exercise'
 import { LessonTemplate } from '../template/lesson'
+import { TranslateTemplate, TranslateOptions } from '../template/translate'
 
 export interface AIResponse {
     success: boolean
@@ -14,6 +15,7 @@ export interface AIOptions {
     templateType: TemplateType
     useAI: boolean
     apiKey?: string
+    translateOptions?: TranslateOptions
 }
 
 export class ChatAIActions {
@@ -38,7 +40,7 @@ export class ChatAIActions {
 
             if (options.useAI && this.apiKey) {
                 // Real AI processing
-                result = await this.callMistralAPI(content, options.templateType)
+                result = await this.callMistralAPI(content, options.templateType, options)
             } else {
                 // Fallback to simple content
                 result = `# ${content.title}
@@ -68,9 +70,9 @@ Phone/Zalo: 0767449819`
         }
     }
 
-    private async callMistralAPI(content: ProblemContent, templateType: TemplateType): Promise<string> {
+    private async callMistralAPI(content: ProblemContent, templateType: TemplateType, options?: AIOptions): Promise<string> {
         // Generate prompt from template
-        const prompt = this.getTemplate(content, templateType)
+        const prompt = this.getTemplate(content, templateType, options)
 
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
             method: 'POST',
@@ -94,12 +96,17 @@ Phone/Zalo: 0767449819`
         return data.choices[0].message.content
     }
 
-    private getTemplate(content: ProblemContent, templateType: TemplateType): string {
+    private getTemplate(content: ProblemContent, templateType: TemplateType, options?: AIOptions): string {
         switch (templateType) {
             case 'exercise':
                 return ExerciseTemplate.generatePrompt(content)
             case 'lesson':
                 return LessonTemplate.generatePrompt(content)
+            case 'translate':
+                if (!options?.translateOptions) {
+                    throw new Error('Translate options are required for translate template')
+                }
+                return TranslateTemplate.generatePrompt(content, options.translateOptions)
             case 'raw':
                 return `Chuyển đổi nội dung sau sang tiếng Việt, giữ nguyên format và cấu trúc:
 

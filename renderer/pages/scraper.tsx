@@ -28,7 +28,9 @@ import {
   Bot,
   Sparkles,
   Brain,
-  Wand2
+  Wand2,
+  Languages,
+  ArrowRight
 } from 'lucide-react'
 import { Topic, ProblemContent, AIProcessingOptions } from '../types/electron'
 
@@ -60,6 +62,14 @@ function ScraperPage() {
     useAI: false
   })
   const [aiApiKey, setAiApiKey] = useState('')
+
+  // Translate Options
+  const [translateOptions, setTranslateOptions] = useState({
+    sourceLang: 'python',
+    targetLang: 'javascript'
+  })
+  const [programmingLanguages, setProgrammingLanguages] = useState<Record<string, any>>({})
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(true)
 
   // Ref để control scraping từ bên ngoài
   const scrapingControlRef = useRef({ shouldStop: false })
@@ -114,6 +124,11 @@ function ScraperPage() {
       description: 'Chuyển thành bài học có cấu trúc',
       icon: '📚'
     },
+    translate: {
+      name: 'Dịch ngôn ngữ',
+      description: 'Chuyển đổi giữa các ngôn ngữ lập trình',
+      icon: '🔄'
+    },
     raw: {
       name: 'Gốc',
       description: 'Giữ nguyên định dạng gốc',
@@ -123,12 +138,30 @@ function ScraperPage() {
 
   useEffect(() => {
     initializeScraper()
+    loadProgrammingLanguages()
     return () => {
       if (window.electron) {
         window.electron.scraper.close()
       }
     }
   }, [])
+
+  // Load programming languages
+  const loadProgrammingLanguages = async () => {
+    try {
+      const result = await window.electron.app.getProgrammingLanguages()
+      if (result.success && result.data) {
+        setProgrammingLanguages(result.data)
+        setIsLoadingLanguages(false)
+      } else {
+        addLog(`❌ Lỗi tải ngôn ngữ: ${result.error}`)
+        setIsLoadingLanguages(false)
+      }
+    } catch (error) {
+      addLog(`❌ Lỗi tải ngôn ngữ: ${error.message}`)
+      setIsLoadingLanguages(false)
+    }
+  }
 
   // Update AI config when API key changes
   useEffect(() => {
@@ -207,6 +240,18 @@ function ScraperPage() {
       return
     }
 
+    // Validate translate options if translate template is selected
+    if (useAI && aiOptions.templateType === 'translate') {
+      if (translateOptions.sourceLang === translateOptions.targetLang) {
+        addLog('❌ Ngôn ngữ nguồn và đích không được giống nhau')
+        return
+      }
+      if (!programmingLanguages[translateOptions.sourceLang] || !programmingLanguages[translateOptions.targetLang]) {
+        addLog('❌ Ngôn ngữ được chọn không hợp lệ')
+        return
+      }
+    }
+
     setIsScrapingActive(true)
     scrapingControlRef.current.shouldStop = false // Reset control flag
 
@@ -220,6 +265,11 @@ function ScraperPage() {
     // Log AI settings
     if (useAI) {
       addLog(`🤖 AI Processing: ${templateConfigs[aiOptions.templateType]?.name || aiOptions.templateType}`)
+      if (aiOptions.templateType === 'translate') {
+        const sourceLangName = programmingLanguages[translateOptions.sourceLang]?.displayName || translateOptions.sourceLang
+        const targetLangName = programmingLanguages[translateOptions.targetLang]?.displayName || translateOptions.targetLang
+        addLog(`🔄 Translate: ${sourceLangName} → ${targetLangName}`)
+      }
     } else {
       addLog(`📝 Sử dụng nội dung gốc (không AI)`)
     }
@@ -263,11 +313,24 @@ function ScraperPage() {
           const result = await window.electron.scraper.getProblemContent(problem.url)
           if (result.success && result.data) {
             // Prepare AI options if enabled
-            const finalAiOptions = useAI ? { ...aiOptions, useAI: true, apiKey: aiApiKey } : undefined
+            const finalAiOptions = useAI ? {
+              ...aiOptions,
+              useAI: true,
+              apiKey: aiApiKey,
+              translateOptions: aiOptions.templateType === 'translate' ? {
+                inLang: programmingLanguages[translateOptions.sourceLang]?.displayName || 'Python',
+                outLang: programmingLanguages[translateOptions.targetLang]?.displayName || 'JavaScript',
+                inLangCodeBlock: programmingLanguages[translateOptions.sourceLang]?.codeBlock || 'python',
+                outLangCodeBlock: programmingLanguages[translateOptions.targetLang]?.codeBlock || 'javascript'
+              } : undefined
+            } : undefined
 
             // Debug logs for AI processing
             if (useAI) {
               addLog(`🤖 AI enabled - Template: ${aiOptions.templateType}`)
+              if (aiOptions.templateType === 'translate') {
+                addLog(`🔄 Translate settings: ${programmingLanguages[translateOptions.sourceLang]?.displayName} → ${programmingLanguages[translateOptions.targetLang]?.displayName}`)
+              }
               addLog(`🔧 AI Options: ${JSON.stringify(finalAiOptions)}`)
             } else {
               addLog(`📝 Using original content (AI disabled)`)
@@ -472,6 +535,11 @@ function ScraperPage() {
             <Bot className="w-4 h-4 mr-2" />
             <span className="text-sm font-medium">
               🤖 AI Enhancement: {templateConfigs[aiOptions.templateType]?.name}
+              {aiOptions.templateType === 'translate' && programmingLanguages[translateOptions.sourceLang] && programmingLanguages[translateOptions.targetLang] && (
+                <span className="ml-2">
+                  ({programmingLanguages[translateOptions.sourceLang].displayName} → {programmingLanguages[translateOptions.targetLang].displayName})
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -833,7 +901,7 @@ function ScraperPage() {
             {/* Template Selection */}
             <div>
               <h4 className="text-lg font-bold text-primary mb-4">Chọn Template</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.entries(templateConfigs).map(([key, config]) => (
                   <div
                     key={key}
@@ -857,6 +925,101 @@ function ScraperPage() {
                 ))}
               </div>
             </div>
+
+            {/* Translate Options - Show only when translate template is selected */}
+            {aiOptions.templateType === 'translate' && (
+              <div>
+                <h4 className="text-lg font-bold text-primary mb-4 flex items-center">
+                  <Languages className="w-5 h-5 mr-2" />
+                  Cài đặt chuyển đổi ngôn ngữ
+                </h4>
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+                  {isLoadingLanguages ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader className="w-6 h-6 animate-spin text-purple-600 mr-3" />
+                      <span className="text-purple-700 font-medium">Đang tải danh sách ngôn ngữ...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Source Language */}
+                        <div className="space-y-3">
+                          <label className="block text-sm font-semibold text-purple-800">
+                            Từ ngôn ngữ (nguồn):
+                          </label>
+                          <select
+                            value={translateOptions.sourceLang}
+                            onChange={(e) => setTranslateOptions(prev => ({ ...prev, sourceLang: e.target.value }))}
+                            className="w-full px-4 py-3 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 font-medium"
+                          >
+                            {Object.values(programmingLanguages).map((lang: any) => (
+                              <option key={lang.name} value={lang.name}>
+                                {lang.icon} {lang.displayName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Target Language */}
+                        <div className="space-y-3">
+                          <label className="block text-sm font-semibold text-purple-800">
+                            Sang ngôn ngữ (đích):
+                          </label>
+                          <select
+                            value={translateOptions.targetLang}
+                            onChange={(e) => setTranslateOptions(prev => ({ ...prev, targetLang: e.target.value }))}
+                            className="w-full px-4 py-3 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 font-medium"
+                          >
+                            {Object.values(programmingLanguages).map((lang: any) => (
+                              <option key={lang.name} value={lang.name}>
+                                {lang.icon} {lang.displayName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Language Preview */}
+                      <div className="bg-white/70 rounded-xl p-4 border border-purple-100">
+                        <div className="flex items-center justify-center space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-2xl">{programmingLanguages[translateOptions.sourceLang]?.icon}</span>
+                            <span className="font-bold text-purple-900">
+                              {programmingLanguages[translateOptions.sourceLang]?.displayName}
+                            </span>
+                          </div>
+                          <div className="text-purple-600">
+                            <ArrowRight className="w-6 h-6" />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-2xl">{programmingLanguages[translateOptions.targetLang]?.icon}</span>
+                            <span className="font-bold text-purple-900">
+                              {programmingLanguages[translateOptions.targetLang]?.displayName}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-center text-purple-700 text-sm mt-2">
+                          AI sẽ chuyển đổi toàn bộ code và giữ nguyên logic test cases
+                        </p>
+                      </div>
+
+                      {/* Warning for same language */}
+                      {translateOptions.sourceLang === translateOptions.targetLang && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start space-x-3">
+                          <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-yellow-800">Cảnh báo</p>
+                            <p className="text-yellow-700 text-sm">
+                              Ngôn ngữ nguồn và đích giống nhau. Vui lòng chọn ngôn ngữ khác nhau để chuyển đổi.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* API Key */}
             <div>

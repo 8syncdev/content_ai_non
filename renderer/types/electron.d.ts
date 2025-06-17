@@ -16,7 +16,7 @@ export interface ProblemContent {
 }
 
 export interface AIProcessingOptions {
-    templateType: 'exercise' | 'lesson' | 'raw'
+    templateType: 'exercise' | 'lesson' | 'translate' | 'raw'
     useAI: boolean
     apiKey?: string
 }
@@ -36,6 +36,14 @@ export interface AIConfig {
     maxTokens: number
 }
 
+export interface ProgrammingLanguage {
+    name: string
+    displayName: string
+    codeBlock: string
+    extension: string
+    icon: string
+}
+
 declare global {
     interface Window {
         electron: {
@@ -49,6 +57,9 @@ declare global {
             ai: {
                 processContent: (content: ProblemContent, options: AIProcessingOptions) => Promise<AIResponse>
                 setApiKey: (apiKey: string) => Promise<{ success: boolean; error?: string }>
+            }
+            app: {
+                getProgrammingLanguages: () => Promise<{ success: boolean; data?: Record<string, ProgrammingLanguage>; error?: string }>
             }
             versions: {
                 node: () => string

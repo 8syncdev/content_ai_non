@@ -5,6 +5,7 @@ import { createWindow } from './helpers'
 import { ContentScraper } from './helpers/scraper'
 import { ensureDirectories, log } from './settings'
 import { aiActions } from './helpers/ai/actions/chat-ai.actions'
+import { PROGRAMMING_LANGUAGES } from './helpers/ai/info-const'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -81,7 +82,7 @@ ipcMain.handle('scraper:exportContent', async (_, content: any, topicName: strin
 
       // Kiểm tra điều kiện AI processing
       const shouldProcessWithAI = aiOptions.useAI && aiOptions.templateType &&
-        (aiOptions.templateType === 'exercise' || aiOptions.templateType === 'lesson' || aiOptions.templateType === 'raw')
+        (aiOptions.templateType === 'exercise' || aiOptions.templateType === 'lesson' || aiOptions.templateType === 'translate' || aiOptions.templateType === 'raw')
 
       log(`🤖 Should process with AI: ${shouldProcessWithAI}`)
 
@@ -200,10 +201,16 @@ ipcMain.handle('ai:setApiKey', async (event, apiKey) => {
     aiActions.setApiKey(apiKey)
     return { success: true }
   } catch (error) {
-    return {
-      success: false,
-      error: error.message || 'Lỗi cấu hình API key'
-    }
+    return { success: false, error: error.message }
+  }
+})
+
+// Programming languages handler
+ipcMain.handle('app:getProgrammingLanguages', async () => {
+  try {
+    return { success: true, data: PROGRAMMING_LANGUAGES }
+  } catch (error) {
+    return { success: false, error: error.message }
   }
 })
 
