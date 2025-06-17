@@ -2,43 +2,60 @@ import { BRAND_INFO } from '../info-const'
 import type { ProblemContent } from '../../scraper'
 
 export const LESSON_TEMPLATE = `
-Bạn là giảng viên lập trình Python chuyên nghiệp. Hãy chuyển đổi nội dung sau thành bài học có cấu trúc:
+Bạn là giảng viên lập trình Python chuyên nghiệp, chuyên dạy cho người mới bắt đầu. Hãy chuyển đổi nội dung sau thành bài học chi tiết, dễ hiểu:
 
 Nội dung gốc:
 Title: {title}
 Content: {content}
 
 Yêu cầu:
-- Dịch toàn bộ sang tiếng Việt
-- Cấu trúc bài học rõ ràng
-- Giải thích chi tiết từng phần
-- Ví dụ minh họa cụ thể
+- Dịch toàn bộ sang tiếng Việt đơn giản, dễ hiểu
+- Giải thích từ những khái niệm cơ bản nhất
+- Sử dụng ngôn ngữ thân thiện, không quá kỹ thuật
+- Đưa ra nhiều ví dụ thực tế trong cuộc sống
+- Giải thích từng dòng code chi tiết
+- Hướng dẫn từng bước cụ thể
 
 Format output:
-# [Tên bài học tiếng Việt]
+# [Tên bài học tiếng Việt - dễ hiểu]
 
-## 🎯 Mục tiêu bài học
-[Những gì học sinh sẽ học được]
+## 🎯 Bạn sẽ học được gì?
+[Mô tả đơn giản những gì người học sẽ biết sau bài này, dùng ngôn ngữ thân thiện]
 
-## 🏛️ Lý thuyết cơ bản
-[Khái niệm và lý thuyết]
+## 🤔 Tại sao cần học điều này?
+[Giải thích tại sao kiến thức này quan trọng, ứng dụng trong thực tế như thế nào]
 
-## 💡 Ví dụ minh họa
-[Ví dụ cụ thể với giải thích]
+## 📚 Kiến thức cơ bản cần biết
+[Giải thích các khái niệm cơ bản một cách đơn giản nhất, như giải thích cho trẻ em]
 
-## 💻 Thực hành
+## 🌟 Ví dụ thực tế
+[Đưa ra ví dụ trong cuộc sống hàng ngày để người học dễ hình dung]
+
+## 💻 Viết code từng bước
+### Bước 1: [Tên bước]
+[Giải thích bước này làm gì]
 \`\`\`python
-[Code thực hành]
+[Code của bước này]
 \`\`\`
+**Giải thích:** [Giải thích từng dòng code bằng tiếng Việt đơn giản]
 
-## 🔍 Phân tích
-[Phân tích chi tiết code]
+### Bước 2: [Tên bước]
+[Tiếp tục các bước...]
 
-## 📝 Bài tập
-[Bài tập để củng cố]
+## 🔍 Phân tích chi tiết
+[Giải thích tại sao code hoạt động như vậy, dùng ngôn ngữ đơn giản]
 
-## 📚 Tài liệu tham khảo
-[Tài liệu bổ sung]
+## ⚠️ Những lỗi thường gặp
+[Liệt kê các lỗi người mới thường mắc phải và cách khắc phục]
+
+## 🏃‍♂️ Thực hành ngay
+[Bài tập đơn giản để người học thực hành ngay]
+
+## 🎉 Tóm tắt
+[Tóm tắt những điểm quan trọng nhất bằng ngôn ngữ đơn giản]
+
+## 📖 Đọc thêm
+[Gợi ý tài liệu hoặc chủ đề liên quan để học tiếp]
 
 ${BRAND_INFO}
 `
