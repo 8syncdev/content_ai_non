@@ -5,6 +5,7 @@ import * as fs from 'fs-extra'
 export const BASE_TEMP_DIR = path.join(process.cwd(), 'temp')
 export const BROWSER_DIR = path.join(BASE_TEMP_DIR, 'browser')
 export const EXPORT_DIR = path.join(BASE_TEMP_DIR, 'export')
+export const AI_CONTENT_DIR = path.join(BASE_TEMP_DIR, 'ai-content')
 export const USER_DATA_DIR = path.join(BASE_TEMP_DIR, 'user-data')
 export const SCREENSHOTS_DIR = path.join(BASE_TEMP_DIR, 'screenshots')
 export const LOGS_DIR = path.join(BASE_TEMP_DIR, 'logs')
@@ -52,6 +53,7 @@ export async function ensureDirectories(): Promise<void> {
         BASE_TEMP_DIR,
         BROWSER_DIR,
         EXPORT_DIR,
+        AI_CONTENT_DIR,
         USER_DATA_DIR,
         SCREENSHOTS_DIR,
         LOGS_DIR

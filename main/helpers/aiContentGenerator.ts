@@ -3,7 +3,7 @@ import { chromium, Browser, Page } from 'playwright'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as cheerio from 'cheerio'
-import { log, getBrowserExecutablePath, checkBrowserExists, ensureDirectories } from '../settings'
+import { log, getBrowserExecutablePath, checkBrowserExists, ensureDirectories, AI_CONTENT_DIR } from '../settings'
 import { ChatAIActions } from './ai/actions/chat-ai.actions'
 import { DEFAULT_AI_CONFIG } from './ai/info-const'
 
@@ -182,35 +182,69 @@ export class AiContentGenerator {
             await this.page.goto(url, { waitUntil: 'networkidle' })
             await this.delay(3000)
 
-            // 2. Collect article links by scrolling
+            // 2. Collect article links and images by scrolling
             sendProgress(this.mainWindow, `🔍 Bắt đầu thu thập ${articleCount} bài viết...`)
-            const articleLinks = new Set<string>()
+            const articlesData = new Map<string, { url: string; imageUrl: string }>()
 
-            while (articleLinks.size < articleCount) {
+            while (articlesData.size < articleCount) {
                 // Get current articles on page using cheerio (like scraper.ts)
                 const pageContent = await this.page.content()
                 const $ = cheerio.load(pageContent)
 
-                // Look for article links in the grid using cheerio
-                const links: string[] = []
-                $('article a[href*="/posts/"]').each((index, element) => {
-                    const href = $(element).attr('href')
-                    if (href && href.includes('/posts/')) {
-                        // Convert relative URLs to absolute URLs
-                        const fullUrl = href.startsWith('http') ? href : `https://app.daily.dev${href}`
-                        links.push(fullUrl)
+                // Look for articles in the grid - collect both links and images
+                $('article').each((index, element) => {
+                    const $article = $(element)
+
+                    // Get article link
+                    const linkEl = $article.find('a[href*="/posts/"]').first()
+                    if (linkEl.length === 0) return
+
+                    const href = linkEl.attr('href')
+                    if (!href || !href.includes('/posts/')) return
+
+                    // Convert relative URLs to absolute URLs
+                    const fullUrl = href.startsWith('http') ? href : `https://app.daily.dev${href}`
+
+                    // Get image from the article (based on prompt specification)
+                    let imageUrl = ''
+
+                    // Priority 1: Look for images with the specific class first
+                    const specificImages = $article.find('img.w-full.my-2.rounded-12.h-40.object-cover')
+                    if (specificImages.length > 0) {
+                        imageUrl = $(specificImages[0]).attr('src') || ''
+                        // Debug: log if multiple images with specific class found
+                        if (specificImages.length > 1 && articlesData.size <= 3) {
+                            sendProgress(this.mainWindow, `    📊 Found ${specificImages.length} specific class images, using first one`)
+                        }
+                    } else {
+                        // Priority 2: Get the first img in article (DOM order - closest to opening <article> tag)
+                        const articleImages = $article.find('img')
+                        if (articleImages.length > 0) {
+                            imageUrl = $(articleImages[0]).attr('src') || ''
+                            // Debug: log image selection for first few articles
+                            if (articlesData.size <= 3) {
+                                sendProgress(this.mainWindow, `    📊 Found ${articleImages.length} images in article, using first one (DOM order)`)
+                            }
+                        }
+                    }
+
+                    // Only add if we don't have this URL yet
+                    if (!articlesData.has(fullUrl)) {
+                        articlesData.set(fullUrl, { url: fullUrl, imageUrl })
 
                         // Debug log first few URLs
-                        if (links.length <= 3) {
+                        if (articlesData.size <= 3) {
                             sendProgress(this.mainWindow, `🔗 Found article: ${fullUrl}`)
+                            if (imageUrl) {
+                                sendProgress(this.mainWindow, `  🖼️ With image: ${imageUrl.substring(0, 80)}...`)
+                            }
                         }
                     }
                 })
 
-                links.forEach(link => articleLinks.add(link))
-                sendProgress(this.mainWindow, `📄 Đã tìm thấy ${articleLinks.size}/${articleCount} bài viết`)
+                sendProgress(this.mainWindow, `📄 Đã tìm thấy ${articlesData.size}/${articleCount} bài viết`)
 
-                if (articleLinks.size >= articleCount) break
+                if (articlesData.size >= articleCount) break
 
                 // Scroll to load more content
                 await this.page.evaluate(() => {
@@ -220,11 +254,13 @@ export class AiContentGenerator {
             }
 
             // 3. Process each article
-            const articlesToProcess = Array.from(articleLinks).slice(0, articleCount)
+            const articlesToProcess = Array.from(articlesData.values()).slice(0, articleCount)
             sendProgress(this.mainWindow, `🚀 Bắt đầu xử lý ${articlesToProcess.length} bài viết`)
 
             for (let i = 0; i < articlesToProcess.length; i++) {
-                const articleUrl = articlesToProcess[i]
+                const articleInfo = articlesToProcess[i]
+                const articleUrl = articleInfo.url
+                const preloadedImageUrl = articleInfo.imageUrl
 
                 try {
                     sendProgress(this.mainWindow, `[${i + 1}/${articlesToProcess.length}] Đang xử lý: ${articleUrl}`)
@@ -255,11 +291,33 @@ export class AiContentGenerator {
                         }
                     }
 
-                    // Extract image
-                    let imageUrl = ''
-                    const imageEl = $('article img, [data-testid="post-image"] img').first()
-                    if (imageEl.length > 0) {
-                        imageUrl = imageEl.attr('src') || ''
+                    // Use preloaded image URL from list page, fallback to detail page if needed
+                    let imageUrl = preloadedImageUrl
+                    if (!imageUrl) {
+                        // Priority 1: Look for images with the specific class first
+                        const specificImages = $('img.w-full.my-2.rounded-12.h-40.object-cover')
+                        if (specificImages.length > 0) {
+                            imageUrl = $(specificImages[0]).attr('src') || ''
+                            sendProgress(this.mainWindow, `  🖼️ Found image in detail page with specific class: ${imageUrl.substring(0, 80)}...`)
+                        } else {
+                            // Priority 2: Get the first img in article (DOM order)
+                            const articleImages = $('article img')
+                            if (articleImages.length > 0) {
+                                imageUrl = $(articleImages[0]).attr('src') || ''
+                                sendProgress(this.mainWindow, `  🖼️ Found first image in article: ${imageUrl.substring(0, 80)}...`)
+                            } else {
+                                // Priority 3: Any img on the page
+                                const anyImages = $('img')
+                                if (anyImages.length > 0) {
+                                    imageUrl = $(anyImages[0]).attr('src') || ''
+                                    sendProgress(this.mainWindow, `  🖼️ Found fallback image: ${imageUrl.substring(0, 80)}...`)
+                                } else {
+                                    sendProgress(this.mainWindow, `  ⚠️ No image found`)
+                                }
+                            }
+                        }
+                    } else {
+                        sendProgress(this.mainWindow, `  🖼️ Using preloaded image from list: ${imageUrl.substring(0, 80)}...`)
                     }
 
                     // Extract content from specified selectors
@@ -300,7 +358,7 @@ export class AiContentGenerator {
                     // 5. Save to file system
                     const slug = this.extractSlugFromUrl(articleUrl)
                     sendProgress(this.mainWindow, `  📂 Creating folder: ${slug}`)
-                    const outputDir = path.resolve(process.cwd(), 'temp', 'ai-content', slug)
+                    const outputDir = path.join(AI_CONTENT_DIR, slug)
                     await fs.ensureDir(outputDir)
 
                     // Save markdown content
@@ -310,15 +368,12 @@ export class AiContentGenerator {
                     // Download and save image if available
                     if (articleData.imageUrl) {
                         try {
-                            const imageResponse = await fetch(articleData.imageUrl)
-                            if (imageResponse.ok) {
-                                const imageBuffer = await imageResponse.arrayBuffer()
-                                const imageExtension = this.getImageExtension(articleData.imageUrl)
-                                const imageName = `image${imageExtension}`
-                                await fs.writeFile(path.join(outputDir, imageName), Buffer.from(imageBuffer))
+                            const imageExtension = this.getImageExtension(articleData.imageUrl)
+                            const imageName = `image${imageExtension}`
+                            const imagePath = path.join(outputDir, imageName)
+                            const success = await this.downloadImageWithPlaywright(articleData.imageUrl, imagePath)
+                            if (success) {
                                 sendProgress(this.mainWindow, `  🖼️ Đã tải ảnh: ${imageName}`)
-                            } else {
-                                sendProgress(this.mainWindow, `  ⚠️ Không thể tải ảnh: HTTP ${imageResponse.status}`)
                             }
                         } catch (imageError) {
                             sendProgress(this.mainWindow, `  ⚠️ Không thể tải ảnh: ${imageError.message}`)
@@ -336,7 +391,7 @@ export class AiContentGenerator {
             }
 
             sendProgress(this.mainWindow, `🎉 Hoàn thành tạo ${articlesToProcess.length} content AI!`)
-            sendProgress(this.mainWindow, `📁 Kết quả được lưu tại: ./temp/ai-content/`)
+            sendProgress(this.mainWindow, `📁 Kết quả được lưu tại: ${AI_CONTENT_DIR}`)
 
         } catch (error) {
             sendProgress(this.mainWindow, `❌ Lỗi tổng quát: ${error.message}`)
@@ -377,6 +432,44 @@ export class AiContentGenerator {
             return extension || '.jpg'
         } catch {
             return '.jpg'
+        }
+    }
+
+    private async downloadImageWithPlaywright(imageUrl: string, outputPath: string): Promise<boolean> {
+        try {
+            if (!this.page) return false
+
+            // Create a new page context for downloading the image
+            const context = this.page.context()
+            const downloadPage = await context.newPage()
+
+            try {
+                // Navigate to the image URL
+                const response = await downloadPage.goto(imageUrl, { waitUntil: 'networkidle' })
+
+                if (!response || !response.ok()) {
+                    sendProgress(this.mainWindow, `  ⚠️ Image response not OK: ${response?.status()}`)
+                    return false
+                }
+
+                // Get the image buffer
+                const imageBuffer = await response.body()
+                if (!imageBuffer) {
+                    sendProgress(this.mainWindow, `  ⚠️ No image buffer received`)
+                    return false
+                }
+
+                // Save the image
+                await fs.writeFile(outputPath, imageBuffer)
+                return true
+
+            } finally {
+                await downloadPage.close()
+            }
+
+        } catch (error) {
+            sendProgress(this.mainWindow, `  ❌ Error downloading image with Playwright: ${error.message}`)
+            return false
         }
     }
 

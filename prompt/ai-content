@@ -22,7 +22,7 @@ bài viết có cấu trúc là các thẻ article bên trong có:
 
 article chính là từng bài viết chứa:
     -a chứa link tới bài viết
-    -img chứa class=my-2 w-full rounded-12 h-40 object-cover chứa src là link tới ảnh tôi cần tải khi 
+    -img năm trong thẻ article đó chứa class=w-full my-2 rounded-12 h-40 object-cover chứa src là link tới ảnh tôi cần tải khi, khi trong article có nhiều img thì ưu tiên lấy img đầu tiên trong thẻ article đó gần thẻ đóng article nhất
 
 đi vào link sẽ có BÀI VIẾT CHI TIẾT, có dạng:
 nội dung copy text trong thẻ:
