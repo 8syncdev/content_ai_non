@@ -3,6 +3,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
 import { ContentScraper } from './helpers/scraper'
+import { AiContentGenerator } from './helpers/aiContentGenerator'
 import { ensureDirectories, log, checkBrowserExists, getBrowserExecutablePath } from './settings'
 import { aiActions } from './helpers/ai/actions/chat-ai.actions'
 import { PROGRAMMING_LANGUAGES } from './helpers/ai/info-const'
@@ -18,6 +19,8 @@ if (isProd) {
 }
 
 let scraper: ContentScraper | null = null
+let aiContentGenerator: AiContentGenerator | null = null
+let mainWindow: BrowserWindow | null = null
 
 // Browser Management Functions
 async function downloadBrowser(): Promise<{ success: boolean; error?: string }> {
@@ -322,30 +325,79 @@ ipcMain.handle('app:getProgrammingLanguages', async () => {
   }
 })
 
-  ; (async () => {
-    await app.whenReady()
+// AI Content Generator IPC Handlers
+ipcMain.handle('ai-content:initialize', async () => {
+  try {
+    log('🚀 Initializing AI Content Generator...')
 
-    log('🚀 Electron app ready, creating main window...')
-
-    // Auto-check browser on app startup
-    log('🔍 Performing initial browser check...')
-    const browserCheck = await checkAndInstallBrowser()
-    if (browserCheck.success && browserCheck.browserExists) {
-      log('✅ Browser ready for use')
-    } else {
-      log(`⚠️ Browser check result: ${browserCheck.error || 'Unknown error'}`)
+    // Auto-check and install browser if needed
+    const browserResult = await checkAndInstallBrowser()
+    if (!browserResult.success || !browserResult.browserExists) {
+      throw new Error(`Browser not available: ${browserResult.error}`)
     }
 
-    const mainWindow = createWindow('main', {
-      width: 1400,
-      height: 900,
+    await ensureDirectories()
+    aiContentGenerator = new AiContentGenerator(mainWindow)
+    await aiContentGenerator.initialize()
+    log('✅ AI Content Generator initialized successfully')
+    return { success: true }
+  } catch (error) {
+    log(`❌ AI Content Generator initialization failed: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('ai-content:close', async () => {
+  try {
+    if (aiContentGenerator) {
+      log('🔒 Closing AI Content Generator...')
+      await aiContentGenerator.close()
+      aiContentGenerator = null
+      log('✅ AI Content Generator closed successfully')
+    }
+    return { success: true }
+  } catch (error) {
+    log(`❌ Failed to close AI Content Generator: ${error.message}`)
+    return { success: false, error: error.message }
+  }
+})
+
+ipcMain.handle('ai-content:start', async (_, options) => {
+  try {
+    log('🚀 Starting AI Content Generation...')
+
+    // Check if AI Content Generator is initialized
+    if (!aiContentGenerator) {
+      throw new Error('AI Content Generator chưa được khởi tạo. Vui lòng khởi tạo trước khi sử dụng.')
+    }
+
+    // Start content generation process
+    await aiContentGenerator.generateContent(options)
+
+    // Send completion signal
+    if (mainWindow) {
+      mainWindow.webContents.send('ai-content:done', '🎉 AI Content Generation completed!')
+    }
+
+    log('✅ AI Content Generation completed successfully')
+    return { success: true }
+  } catch (error) {
+    log(`❌ AI Content Generation failed: ${error.message}`)
+    if (mainWindow) {
+      mainWindow.webContents.send('ai-content:done', `❌ Error: ${error.message}`)
+    }
+    return { success: false, error: error.message }
+  }
+})
+
+  ; (async () => {
+    await app.whenReady()
+    mainWindow = createWindow('main', {
+      width: 1000,
+      height: 600,
       webPreferences: {
-        preload: `${__dirname}/preload.js`,
-        nodeIntegration: false,
-        contextIsolation: true,
-        devTools: false
+        preload: path.join(__dirname, 'preload.js'),
       },
-      icon: path.join(__dirname, '..', 'resources', 'icon.ico'),
     })
 
     if (isProd) {
@@ -353,10 +405,8 @@ ipcMain.handle('app:getProgrammingLanguages', async () => {
     } else {
       const port = process.argv[2]
       await mainWindow.loadURL(`http://localhost:${port}/home`)
-      mainWindow.webContents.openDevTools()
+      // mainWindow.webContents.openDevTools()
     }
-
-    log('✅ Main window created and loaded')
   })()
 
 app.on('window-all-closed', () => {

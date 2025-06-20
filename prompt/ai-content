@@ -1,0 +1,41 @@
+viết tôi trang chức năng như sau, tự sinh content bằng AI công nghệ dùng playwright:
+Sinh template chuyên viết Content Marketing, SEO viết lại từ nội dung lấy từ bài viết thay bằng brand của mình, 100% tiếng Việt thu hút khách hàng nhất có thể và cũng có thể tự điền template của mình vào
+
+có thể vào các trang sau để lấy DANH SÁCH BÀI VIẾT:
+Cách thông thường
+Bài viết phổ biến: https://app.daily.dev/tags
+Bài viết nhiều votes: https://app.daily.dev/posts/upvoted
+Bài viết nhiều bình luận nhất: https://app.daily.dev/posts/discussed
+Bài viết mới nhất: https://app.daily.dev/posts/latest
+
+Cách lấy theo tags
+Step1: vào trang tags để liệt kê all tags: https://app.daily.dev/tags
+Cấu trúc html để lấy tags:
+vào trong thẻ class="columns-[17rem] px-4 tablet:px-0"
+để lấy tất cả tags và link để vào lấy DANH SÁCH BÀI VIẾT:
+đó là các thẻ a bên trong
+
+
+DANH SÁCH BÀI VIẾT, có dạng html sau để lấy chi tiết từng bài:
+tất cả bài viết nằm trong thẻ class=grid gap-8 grid-cols-5
+bài viết có cấu trúc là các thẻ article bên trong có:
+
+article chính là từng bài viết chứa:
+    -a chứa link tới bài viết
+    -img chứa class=my-2 w-full rounded-12 h-40 object-cover chứa src là link tới ảnh tôi cần tải khi 
+
+đi vào link sẽ có BÀI VIẾT CHI TIẾT, có dạng:
+nội dung copy text trong thẻ:
+div class=relative flex min-w-0 flex-1 flex-col px-4 laptop:px-8 laptop:pt-8
+hoặc main class=relative laptop:pt-8 flex flex-col flex-1 px-4 laptop:px-8 laptop:border-r laptop:border-border-subtlest-tertiary overflow-hidden
+
+Được chọn số lượng bài viết quét, quét bài viết phải scroll xuống mới lấy thêm được bài viết nên tự động scroll tới khi lấy đủ bài, phân biệt bời link vì link là unique
+lấy text để truyền vào AI sinh ra content theo yêu cầu chuẩn
+xuất toàn bộ ra thư mục có cấu trúc sau
+./temp/ai-content/
+bên trong là các bài là các thư mục vì link BÀI VIẾT LẤY TỪ DANH SÁCH BÀI VIẾT có dạng ví dụ /posts/build-fast-with-beautiful-ready-made-ui-components--qbgekarga nên lấy cái slug build-fast-with-beautiful-ready-made-ui-components--qbgekarga
+bên trong là ảnh đã tải về và 1 file md chứa nội dung AI sinh theo template trên
+
+
+
+

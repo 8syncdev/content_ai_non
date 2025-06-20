@@ -50,6 +50,14 @@ export interface BrowserStatus {
     browserDir: string
 }
 
+export interface AiContentOptions {
+    source: 'upvoted' | 'discussed' | 'latest' | 'tags'
+    tag?: string
+    articleCount: number
+    template: string
+    apiKey?: string
+}
+
 declare global {
     interface Window {
         electron: {
@@ -58,6 +66,11 @@ declare global {
                 getTopics: (url: string) => Promise<{ success: boolean; data?: Topic[]; error?: string }>
                 getProblemContent: (url: string) => Promise<{ success: boolean; data?: ProblemContent; error?: string }>
                 exportContent: (content: ProblemContent, topicName: string, topicIndex?: number, problemIndex?: number, aiOptions?: AIProcessingOptions) => Promise<{ success: boolean; error?: string }>
+                close: () => Promise<{ success: boolean; error?: string }>
+            }
+            aiContent: {
+                initialize: () => Promise<{ success: boolean; error?: string }>
+                start: (options: AiContentOptions) => Promise<{ success: boolean; error?: string }>
                 close: () => Promise<{ success: boolean; error?: string }>
             }
             ai: {
@@ -71,6 +84,11 @@ declare global {
             }
             app: {
                 getProgrammingLanguages: () => Promise<{ success: boolean; data?: Record<string, ProgrammingLanguage>; error?: string }>
+            }
+            ipcRenderer: {
+                on: (channel: string, listener: (...args: unknown[]) => void) => (() => void)
+                send: (channel: string, ...args: unknown[]) => void
+                invoke: (channel: string, ...args: unknown[]) => Promise<any>
             }
             versions: {
                 node: () => string

@@ -9,7 +9,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Activity,
-    Code2
+    Code2,
+    Sparkles
 } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useApp } from '../contexts/AppContext'
@@ -35,6 +36,13 @@ const navigationItems = [
         icon: FileText,
         color: 'text-indigo-600',
         hoverColor: 'hover:bg-indigo-50'
+    },
+    {
+        name: 'Sinh nội dung AI',
+        href: '/ai-content',
+        icon: Sparkles,
+        color: 'text-purple-600',
+        hoverColor: 'hover:bg-purple-50'
     },
     {
         name: 'Theo dõi tiến độ',
